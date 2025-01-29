@@ -109,14 +109,14 @@ def goku(backgroundtasks: BackgroundTasks):
     cv2.destroyAllWindows()
 
 
-@luffy.get("/camera/")
+@luffy.get("/licenseplate")
 async def ichigo(backgroundtasks: BackgroundTasks):
     """Endpoint to start webcam capture."""
     backgroundtasks.add_task(goku, backgroundtasks)
     return {"message": "Capturing License Plate..."}
 
 
-@luffy.post("/detect/")
+@luffy.post("/detect")
 async def ace(file: UploadFile = File(...)):
     """Endpoint to upload image for license plate detection."""
 
@@ -133,7 +133,7 @@ async def ace(file: UploadFile = File(...)):
     return {"message": "Invalid image."}
 
 
-@luffy.get("/data/")
+@luffy.get("/database")
 async def sasuke():
     """Endpoint to fetch all license plates from the database."""
     conn = naruto()
