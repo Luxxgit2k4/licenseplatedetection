@@ -30,7 +30,7 @@ def naruto():
             host="localhost",
             dbname="licenseplate",
             user="postgres",
-            password="1972"
+            password="password"
         )
         return conn
     except Exception as jiraiya:
