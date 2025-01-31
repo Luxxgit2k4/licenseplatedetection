@@ -1,5 +1,4 @@
 import cv2
-
 import numpy as np
 import easyocr
 from fastapi import FastAPI, BackgroundTasks
@@ -35,7 +34,7 @@ def naruto():
         )
         return conn
     except Exception as jiraiya:
-        customlog.error("Error connecting to database:, {jiraiya}")
+        customlog.error(f"Error connecting to database:, {jiraiya}")
         return None
 
 
@@ -115,19 +114,9 @@ def goku(backgroundtasks: BackgroundTasks):
 
         detectedtext, accuracy = sanji(img)
         if detectedtext:
-         customlog.error(f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%")
-
-        cv2.imshow("License Plate Detection", img)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            customlog.info("Camera exiting...")
-            customlog.info("Stopped detecting license plates")
-            break
+            customlog.error(f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%")
 
     cap.release()
-    cv2.destroyAllWindows()
-
-
 @luffy.get("/licenseplate")
 async def ichigo(backgroundtasks: BackgroundTasks):
     """Endpoint to start webcam capture."""
