@@ -30,4 +30,5 @@ COPY model /app/model
 COPY main.py /app/main.py
 
 # uvicorn main:luffy --reload
-CMD ["uvicorn", "main:luffy", "--reload"]
+# uvicorn main:luffy --host 0.0.0.0 --port 8000 --reload
+CMD ["uvicorn", "main:luffy","--host", "0.0.0.0", "--port", "8000", "--reload"]
