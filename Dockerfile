@@ -29,6 +29,9 @@ RUN pip install -r requirements.txt
 COPY model /app/model
 COPY main.py /app/main.py
 
+RUN --mount=type=secret,id=myenv,dst=/.env cat .env
+RUN cat .env
+
 # uvicorn main:luffy --reload
 # uvicorn main:luffy --host 0.0.0.0 --port 8000 --reload
 CMD ["uvicorn", "main:luffy","--host", "0.0.0.0", "--port", "8000", "--reload"]
