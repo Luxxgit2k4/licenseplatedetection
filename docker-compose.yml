@@ -17,12 +17,12 @@ services:
 
   licenseplate:
     container_name: licenseplate-server
-    image: licenseplate:test2
+    image: licenseplate:remotedb
     hostname: localhost
     depends_on:
       - postgres
     networks:
-        - localhost
+      - localhost
     ports:
       - "8001:8000"
     volumes:
@@ -33,9 +33,9 @@ services:
       resources:
         reservations:
           devices:
-          - driver: nvidia
-            count: 1
-            capabilities: [gpu]
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     restart: unless-stopped
 
 networks:
