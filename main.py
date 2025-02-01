@@ -1,17 +1,19 @@
-import cv2
-import numpy as np
-import easyocr
-from fastapi import FastAPI, BackgroundTasks
-from io import BytesIO
-import psycopg2
-import threading
-import uvicorn
 import logging
 import sys
+import threading
+from io import BytesIO
+
+import cv2
+import easyocr
+import numpy as np
+import psycopg2
+import uvicorn
+from fastapi import BackgroundTasks, FastAPI
 from pynput import keyboard
 
 luffy = FastAPI()
 stopcamera = threading.Event()
+
 
 # logger = logging.getLogger("uvicorn")
 # logger.setLevel(logging.DEBUG)
@@ -22,13 +24,14 @@ stopcamera = threading.Event()
 customlog = logging.getLogger("logs")
 customlog.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 customlog.addHandler(handler)
+
 
 def exitcamera():
     def on_press(key):
         try:
-            if key.char == 'q':
+            if key.char == "q":
                 customlog.info("Stopping license plate detection...")
                 stopcamera.set()
         except AttributeError:
@@ -37,6 +40,7 @@ def exitcamera():
     with keyboard.Listener(on_press=on_press) as listener:
         listener.join()
 
+
 def naruto():
     try:
         conn = psycopg2.connect(
@@ -44,14 +48,16 @@ def naruto():
             port="56406",
             dbname="railway",
             user="postgres",
-            password="1972"
+            password="XLndsnUKsuABAGgQCcDVlvHJPKbFRVgD",
         )
         conn.autocommit = True
         cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM pg_catalog.pg_database WHERE datname = 'licenseplate'")
+        cursor.execute(
+            "SELECT 1 FROM pg_catalog.pg_database WHERE datname = 'licenseplate'"
+        )
         exists = cursor.fetchone()
         if not exists:
-            cursor.execute('CREATE DATABASE licenseplate')
+            cursor.execute("CREATE DATABASE licenseplate")
             customlog.info("Database 'licenseplate' created.")
         cursor.close()
         conn.close()
@@ -61,22 +67,25 @@ def naruto():
             port="56406",
             dbname="railway",
             user="postgres",
-            password="password"
+            password="XLndsnUKsuABAGgQCcDVlvHJPKbFRVgD",
         )
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
         CREATE TABLE IF NOT EXISTS plates (
             license_plate_number VARCHAR PRIMARY KEY,
             vehicle_entered BOOLEAN,
             accuracy_percentage FLOAT
         );
-        """)
+        """
+        )
         customlog.info("Table 'plates' is ready.")
         cursor.close()
         return conn
     except Exception as e:
         customlog.error(f"Error connecting to database: {e}")
         return None
+
 
 def zoro(plate, entered, accuracy):
     conn = naruto()
@@ -93,12 +102,14 @@ def zoro(plate, entered, accuracy):
         conn.commit()
         kakashi.close()
         conn.close()
-        customlog.info(f"Inserted license plate {plate} into database with accuracy {accuracy}%.")
+        customlog.info(
+            f"Inserted license plate {plate} into database with accuracy {accuracy}%."
+        )
     else:
         customlog.error("Failed to insert data into database.")
 
 
-nami = easyocr.Reader(['en'])
+nami = easyocr.Reader(["en"])
 gintoki = "model/indian_license_plate.xml"
 shinpachi = cv2.CascadeClassifier(gintoki)
 
@@ -110,13 +121,15 @@ if shinpachi.empty():
 def sanji(image: np.ndarray):
     imggray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     height, width = imggray.shape
-    roi = imggray[int(height / 2):, :]
+    roi = imggray[int(height / 2) :, :]
 
-    plates = shinpachi.detectMultiScale(roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50))
+    plates = shinpachi.detectMultiScale(
+        roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50)
+    )
     largest = None
     largestarea = 0
 
-    for (x, y, w, h) in plates:
+    for x, y, w, h in plates:
         area = w * h
         if area > 1000:
             y += int(height / 2)
@@ -129,7 +142,7 @@ def sanji(image: np.ndarray):
 
     if largest is not None:
         (x, y, w, h) = largest
-        plateimg = image[y:y + h, x:x + w]
+        plateimg = image[y : y + h, x : x + w]
         result = nami.readtext(plateimg)
         if result:
             detectedtext = result[0][1].upper()
@@ -139,7 +152,6 @@ def sanji(image: np.ndarray):
 
             return detectedtext, accuracy
     return None, 0
-
 
 
 def goku(backgroundtasks: BackgroundTasks):
@@ -159,7 +171,15 @@ def goku(backgroundtasks: BackgroundTasks):
 
         detectedtext, accuracy = sanji(img)
         if detectedtext:
-            customlog.info(f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%")
+            customlog.info(
+                f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%"
+            )
+            customlog.error(
+                f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%"
+            )
+            customlog.error(
+                f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%"
+            )
 
     cap.release()
     cv2.destroyAllWindows()
@@ -172,6 +192,7 @@ async def ichigo(backgroundtasks: BackgroundTasks):
     backgroundtasks.add_task(goku, backgroundtasks)
     customlog.info("Started to capture license plate...")
     return {"message": "Capturing License Plate..."}
+
 
 @luffy.get("/stop")
 async def stoplicenseplate():
@@ -199,7 +220,7 @@ async def sasuke():
             {
                 "license_plate_number": row[0],
                 "vehicle_entered": row[1],
-                "accuracy_percentage": row[2]
+                "accuracy_percentage": row[2],
             }
             for row in records
         ]
@@ -209,11 +230,13 @@ async def sasuke():
         customlog.error(f"Error fetching data from database: {itachi}")
         return {"error": str(itachi)}
 
+
 # log_config = uvicorn.config.LOGGING_CONFIG
-#log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
+# log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
 @luffy.get("/servererror")
 async def servererror():
     raise Exception("Server error for testing logging")
+
 
 # log_config = uvicorn.config.LOGGING_CONFIG
 # log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s - %(remote_addr)s - %(request_method)s - %(path)s - %(status_code)s"
