@@ -3,6 +3,11 @@
 
 # License Plate Detection API
 
+# Commands to RUNN
+1. docker compose down
+2. docker build --secret id=myenv,src=.env -f Dockerfile -t safe .
+3. docker compose up -d
+
 This project is a FastAPI-based application for detecting license plates from images and a live webcam feed. It uses OpenCV for image processing, EasyOCR for text recognition, and PostgreSQL for storing detected plates.
 
 ## Prerequisites
