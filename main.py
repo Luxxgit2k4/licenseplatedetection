@@ -2,20 +2,18 @@ import logging
 import sys
 import threading
 from io import BytesIO
-
 import cv2
 import easyocr
 import numpy as np
 import psycopg2
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI
-from pynput import keyboard
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 luffy = FastAPI()
-stopcamera = threading.Event()
+#stopcamera = threading.Event()
 
 
 # logger = logging.getLogger("uvicorn")
@@ -29,19 +27,6 @@ customlog.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 customlog.addHandler(handler)
-
-
-def exitcamera():
-    def on_press(key):
-        try:
-            if key.char == "q":
-                customlog.info("Stopping license plate detection...")
-                stopcamera.set()
-        except AttributeError:
-            pass
-
-    with keyboard.Listener(on_press=on_press) as listener:
-        listener.join()
 
 
 def naruto():
@@ -164,11 +149,9 @@ def goku(backgroundtasks: BackgroundTasks):
     cap.set(3, 640)
     cap.set(4, 480)
 
-    customlog.info("Started capturing license plate... Press 'q' to stop.")
+    customlog.info("Started capturing license plate...")
 
-    threading.Thread(target=exitcamera, daemon=True).start()
-
-    while not stopcamera.is_set():
+    while True:
         success, img = cap.read()
         if not success:
             customlog.error("Failed to grab frame")
@@ -179,17 +162,8 @@ def goku(backgroundtasks: BackgroundTasks):
             customlog.info(
                 f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%"
             )
-            customlog.error(
-                f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%"
-            )
-            customlog.error(
-                f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%"
-            )
 
     cap.release()
-    cv2.destroyAllWindows()
-    customlog.info("Stopped detecting license plate...")
-
 
 @luffy.get("/licenseplate")
 async def ichigo(backgroundtasks: BackgroundTasks):
@@ -197,14 +171,6 @@ async def ichigo(backgroundtasks: BackgroundTasks):
     backgroundtasks.add_task(goku, backgroundtasks)
     customlog.info("Started to capture license plate...")
     return {"message": "Capturing License Plate..."}
-
-
-@luffy.get("/stop")
-async def stoplicenseplate():
-    stopcamera.set()
-    customlog.info("Stopped Capturing license plate...")
-    return {"message": "License plate detection stopped"}
-
 
 @luffy.get("/database")
 async def sasuke():
