@@ -28,8 +28,9 @@ RUN pip install -r requirements.txt
 
 COPY model /app/model
 COPY main.py /app/main.py
+COPY .env /app/.env
 
-RUN --mount=type=secret,id=myenv,dst=/app/.env cat /app/.env
+# RUN --mount=type=secret,id=myenv,dst=/app/.env cat /app/.env
 # RUN cat /app/.env
 
 # uvicorn main:luffy --reload
