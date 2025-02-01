@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     container_name: postgres-db
@@ -6,6 +5,8 @@ services:
     hostname: localhost
     ports:
       - "5433:5432"
+    networks:
+      - localhost
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -16,12 +17,30 @@ services:
 
   licenseplate:
     container_name: licenseplate-server
-    image: licenseplate:test1
+    image: licenseplate:test2
+    hostname: localhost
     depends_on:
       - postgres
+    networks:
+        - localhost
     ports:
       - "8001:8000"
+    volumes:
+      - /dev/video0:/dev/video0
+    devices:
+      - /dev/video0
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
     restart: unless-stopped
+
+networks:
+  localhost:
+    external: false
 
 volumes:
   postgres-data:
