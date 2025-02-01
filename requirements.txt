@@ -58,6 +58,7 @@ pynput==1.7.7
 pyparsing==3.2.1
 python-bidi==0.6.3
 python-dateutil==2.9.0.post0
+python-dotenv==1.0.1
 python-multipart==0.0.20
 python-xlib==0.33
 pytz==2024.2
