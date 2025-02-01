@@ -10,7 +10,10 @@ import psycopg2
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI
 from pynput import keyboard
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 luffy = FastAPI()
 stopcamera = threading.Event()
 
@@ -44,12 +47,13 @@ def exitcamera():
 def naruto():
     try:
         conn = psycopg2.connect(
-            host="viaduct.proxy.rlwy.net",
-            port="56406",
-            dbname="railway",
-            user="postgres",
-            password="XLndsnUKsuABAGgQCcDVlvHJPKbFRVgD",
-        )
+            host= os.getenv("DB_HOST"),
+            port= os.getenv("DB_PORT"),
+            dbname= os.getenv("DB_NAME"),
+            user= os.getenv("DB_USER"),
+            password= os.getenv("DB_PASSWORD")
+            )
+
         conn.autocommit = True
         cursor = conn.cursor()
         cursor.execute(
@@ -63,12 +67,13 @@ def naruto():
         conn.close()
 
         conn = psycopg2.connect(
-            host="viaduct.proxy.rlwy.net",
-            port="56406",
-            dbname="railway",
-            user="postgres",
-            password="XLndsnUKsuABAGgQCcDVlvHJPKbFRVgD",
+           host= os.getenv("DB_HOST"),
+            port= os.getenv("DB_PORT"),
+            dbname= os.getenv("DB_NAME"),
+            user= os.getenv("DB_USER"),
+            password= os.getenv("DB_PASSWORD")
         )
+
         cursor = conn.cursor()
         cursor.execute(
             """
