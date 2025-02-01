@@ -17,7 +17,7 @@ services:
 
   licenseplate:
     container_name: licenseplate-server
-    image: licenseplate:remotedb
+    image: safe:latest
     hostname: localhost
     depends_on:
       - postgres
