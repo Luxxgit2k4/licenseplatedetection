@@ -40,16 +40,43 @@ def exitcamera():
 def naruto():
     try:
         conn = psycopg2.connect(
-                host="localhost",
-            dbname="licenseplate",
+            host="viaduct.proxy.rlwy.net",
+            port="56406",
+            dbname="railway",
             user="postgres",
             password="1972"
         )
-        return conn
-    except Exception as jiraiya:
-        customlog.error(f"Error connecting to database:, {jiraiya}")
-        return None
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM pg_catalog.pg_database WHERE datname = 'licenseplate'")
+        exists = cursor.fetchone()
+        if not exists:
+            cursor.execute('CREATE DATABASE licenseplate')
+            customlog.info("Database 'licenseplate' created.")
+        cursor.close()
+        conn.close()
 
+        conn = psycopg2.connect(
+            host="viaduct.proxy.rlwy.net",
+            port="56406",
+            dbname="railway",
+            user="postgres",
+            password="password"
+        )
+        cursor = conn.cursor()
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS plates (
+            license_plate_number VARCHAR PRIMARY KEY,
+            vehicle_entered BOOLEAN,
+            accuracy_percentage FLOAT
+        );
+        """)
+        customlog.info("Table 'plates' is ready.")
+        cursor.close()
+        return conn
+    except Exception as e:
+        customlog.error(f"Error connecting to database: {e}")
+        return None
 
 def zoro(plate, entered, accuracy):
     conn = naruto()
