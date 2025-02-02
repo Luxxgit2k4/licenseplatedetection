@@ -10,6 +10,7 @@ import uvicorn
 from fastapi import BackgroundTasks, FastAPI
 from dotenv import load_dotenv
 import os
+import time
 
 load_dotenv()
 luffy = FastAPI()
@@ -144,12 +145,16 @@ def sanji(image: np.ndarray):
     return None, 0
 
 
+
 def goku(backgroundtasks: BackgroundTasks):
     cap = cv2.VideoCapture(0)
     cap.set(3, 640)
     cap.set(4, 480)
 
     customlog.info("Started capturing license plate...")
+
+    detectiontime = time.time()
+    timeout = 60
 
     while True:
         success, img = cap.read()
@@ -162,8 +167,15 @@ def goku(backgroundtasks: BackgroundTasks):
             customlog.info(
                 f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%"
             )
+            detectiontime = time.time()
+        else:
+
+            if time.time() - detectiontime > timeout:
+                customlog.info("Stopping licenseplate detection due to inactivity...")
+                break
 
     cap.release()
+
 
 @luffy.get("/licenseplate")
 async def ichigo(backgroundtasks: BackgroundTasks):
