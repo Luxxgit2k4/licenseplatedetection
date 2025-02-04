@@ -31,6 +31,8 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 customlog.addHandler(handler)
 
+duplicateplates = set()
+
 def formatplate(plate: str) -> str:
     cleaned = plate.replace(" ", "").upper()
     if len(cleaned) == 10:
@@ -164,6 +166,10 @@ def sanji(image: np.ndarray):
             accuracy = result[0][2] * 100
             if validateplate(detectedtext):
                 formattedplate = formatplate(detectedtext)
+                if formattedplate in duplicateplates:
+                    customlog.info(f"License plate {formattedplate} already detected, skipping detection...")
+                    return None, 0
+                duplicateplates.add(formattedplate)
                 entered = True
                 zoro(formattedplate, entered, accuracy)
                 customlog.info(f"Valid license plate detected: {formattedplate} with accuracy {accuracy:.2f}%")
