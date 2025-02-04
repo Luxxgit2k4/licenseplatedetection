@@ -7,10 +7,12 @@ import easyocr
 import numpy as np
 import psycopg2
 import uvicorn
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, Request
+from fastapi.responses import HTMLResponse, StreamingResponse
 from dotenv import load_dotenv
 import os
 import time
+import re
 
 load_dotenv()
 luffy = FastAPI()
@@ -29,6 +31,15 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 customlog.addHandler(handler)
 
+def formatplate(plate: str) -> str:
+    cleaned = plate.replace(" ", "").upper()
+    if len(cleaned) == 10:
+        return f"{cleaned[0:2]} {cleaned[2:4]} {cleaned[4:6]} {cleaned[6:10]}"
+    return cleaned
+
+def validateplate(plate: str) -> bool:
+    cleaned = plate.replace(" ", "")
+    return len(cleaned) == 10
 
 def naruto():
     try:
@@ -77,6 +88,20 @@ def naruto():
         customlog.error(f"Error connecting to database: {e}")
         return None
 
+def cleardata():
+    conn = naruto()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM plates;")
+            conn.commit()
+            cursor.close()
+            customlog.info("Clearing database...")
+        except kumar as e:
+            customlog.error(f"Error clearing the database: {e}")
+        finally:
+            conn.close()
+
 
 def zoro(plate, entered, accuracy):
     conn = naruto()
@@ -108,11 +133,10 @@ if shinpachi.empty():
     customlog.error("Error: Cascade file not loaded correctly.")
     exit()
 
-
 def sanji(image: np.ndarray):
     imggray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     height, width = imggray.shape
-    roi = imggray[int(height / 2) :, :]
+    roi = imggray[int(height / 2):, :]
 
     plates = shinpachi.detectMultiScale(
         roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50)
@@ -133,18 +157,20 @@ def sanji(image: np.ndarray):
 
     if largest is not None:
         (x, y, w, h) = largest
-        plateimg = image[y : y + h, x : x + w]
+        plateimg = image[y:y + h, x:x + w]
         result = nami.readtext(plateimg)
         if result:
-            detectedtext = result[0][1].upper()
+            detectedtext = result[0][1].upper().strip()
             accuracy = result[0][2] * 100
-            entered = True  # Assuming vehicle entered if detected
-            zoro(detectedtext, entered, accuracy)
-
-            return detectedtext, accuracy
+            if validateplate(detectedtext):
+                formattedplate = formatplate(detectedtext)
+                entered = True
+                zoro(formattedplate, entered, accuracy)
+                customlog.info(f"Valid license plate detected: {formattedplate} with accuracy {accuracy:.2f}%")
+                return formattedplate, accuracy
+            else:
+                customlog.info(f"Detected text '{detectedtext}' does not appear to be a valid license plate.")
     return None, 0
-
-
 
 def goku(backgroundtasks: BackgroundTasks):
     cap = cv2.VideoCapture(0)
@@ -220,11 +246,15 @@ async def sasuke():
 async def servererror():
     raise Exception("Server error for testing logging")
 
-
 # log_config = uvicorn.config.LOGGING_CONFIG
 # log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s - %(remote_addr)s - %(request_method)s - %(path)s - %(status_code)s"
 #
 #
 # log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
+
+Cleardata = True
+
 if __name__ == "__main__":
+    if Cleardata:
+        cleardata()
     uvicorn.run(luffy, host="127.0.0.1", port=8000)
