@@ -35,6 +35,7 @@ duplicateplates = set()
 
 def formatplate(plate: str) -> str:
     cleaned = plate.replace(" ", "").upper()
+    cleaned = re.sub(r"^[^A-Z0-9]*", "", cleaned)
     if len(cleaned) == 10:
         return f"{cleaned[0:2]} {cleaned[2:4]} {cleaned[4:6]} {cleaned[6:10]}"
     return cleaned
@@ -99,8 +100,8 @@ def cleardata():
             conn.commit()
             cursor.close()
             customlog.info("Clearing database...")
-        except kumar as e:
-            customlog.error(f"Error clearing the database: {e}")
+        except Exception as kumar:
+            customlog.error(f"Error clearing the database: {kumar}")
         finally:
             conn.close()
 
@@ -135,6 +136,8 @@ if shinpachi.empty():
     customlog.error("Error: Cascade file not loaded correctly.")
     exit()
 
+
+
 def sanji(image: np.ndarray):
     imggray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     height, width = imggray.shape
@@ -164,18 +167,22 @@ def sanji(image: np.ndarray):
         if result:
             detectedtext = result[0][1].upper().strip()
             accuracy = result[0][2] * 100
-            if validateplate(detectedtext):
-                formattedplate = formatplate(detectedtext)
-                if formattedplate in duplicateplates:
-                    customlog.info(f"License plate {formattedplate} already detected, skipping detection...")
-                    return None, 0
-                duplicateplates.add(formattedplate)
-                entered = True
-                zoro(formattedplate, entered, accuracy)
-                customlog.info(f"Valid license plate detected: {formattedplate} with accuracy {accuracy:.2f}%")
-                return formattedplate, accuracy
+            if accuracy >= 60:
+                if validateplate(detectedtext):
+                    formattedplate = formatplate(detectedtext)
+                    if formattedplate in duplicateplates:
+                        customlog.info(f"License plate {formattedplate} already detected, skipping detection...")
+                        return None, 0
+                    duplicateplates.add(formattedplate)
+                    entered = True
+                    customlog.info(f"Valid license plate detected: {formattedplate} with accuracy {accuracy:.2f}%")
+                    zoro(formattedplate, entered, accuracy)
+                    customlog.info(f"Inserted license plate {formattedplate} into database with accuracy {accuracy:.2f}%.")
+                    return formattedplate, accuracy
+                else:
+                    customlog.info(f"Detected plate '{detectedtext}' does not appear to be a valid license plate.")
             else:
-                customlog.info(f"Detected text '{detectedtext}' does not appear to be a valid license plate.")
+                customlog.info(f"The accuracy of the license plate is less, skipping inserting into the database...")
     return None, 0
 
 def goku(backgroundtasks: BackgroundTasks):
@@ -194,20 +201,14 @@ def goku(backgroundtasks: BackgroundTasks):
             customlog.error("Failed to grab frame")
             break
 
-        detectedtext, accuracy = sanji(img)
+        detectedtext, accuracy = sanji(img)  # sanji already handles logging
         if detectedtext:
-            customlog.info(
-                f"Detected License Plate: {detectedtext} with accuracy {accuracy:.2f}%"
-            )
             detectiontime = time.time()
-        else:
-
-            if time.time() - detectiontime > timeout:
-                customlog.info("Stopping licenseplate detection due to inactivity...")
-                break
+        elif time.time() - detectiontime > timeout:
+            customlog.info("Stopping license plate detection due to inactivity...")
+            break
 
     cap.release()
-
 
 @luffy.get("/licenseplate")
 async def ichigo(backgroundtasks: BackgroundTasks):
@@ -258,7 +259,7 @@ async def servererror():
 #
 # log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
 
-Cleardata = True
+Cleardata = True #change it to true or false. True clears the database and false does not clear the database
 
 if __name__ == "__main__":
     if Cleardata:
