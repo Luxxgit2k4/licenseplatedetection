@@ -324,10 +324,10 @@ Cleardata = True #change it to true or false. True clears the database and false
 
 if __name__ == "__main__":
     # Start the frame capture thread before running the FastAPI app
-    frame_capture_thread = threading.Thread(target=capture_frames)
-    frame_capture_thread.daemon = True  # Ensure the thread exits when the program exits
-    frame_capture_thread.start()
-
+    # frame_capture_thread = threading.Thread(target=capture_frames)
+    # frame_capture_thread.daemon = True  # Ensure the thread exits when the program exits
+    # frame_capture_thread.start()
+    #
     if Cleardata:
         cleardata()
     uvicorn.run(luffy, host="127.0.0.1", port=8000)
