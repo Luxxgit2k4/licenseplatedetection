@@ -10,6 +10,7 @@ import uvicorn
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from dotenv import load_dotenv
+from queue import Queue
 import os
 import time
 import re
@@ -33,6 +34,15 @@ customlog.addHandler(handler)
 
 duplicateplates = set()
 
+# event to control the capture loop
+capture_event = threading.Event()
+# global vidoe capture
+cap = ""
+# global frame queue
+frame_queue = Queue(maxsize=60)
+# cap.set(3, 640)
+# cap.set(4, 480)
+
 def formatplate(plate: str) -> str:
     cleaned = plate.replace(" ", "").upper()
     cleaned = re.sub(r"^[^A-Z0-9]*", "", cleaned)
@@ -42,7 +52,58 @@ def formatplate(plate: str) -> str:
 
 def validateplate(plate: str) -> bool:
     cleaned = plate.replace(" ", "")
-    return len(cleaned) == 10
+    return len(cleaned) == 8
+
+def startCapturing():
+    capture_event.set()
+    frame_capture_thread = threading.Thread(target=capture_frames)
+    frame_capture_thread.daemon = True  # Ensure the thread exits when the program exits
+    frame_capture_thread.start()
+
+def stopCapturing():
+    capture_event.clear()
+
+
+# Function to capture frames from the webcam and push them into the queue
+def capture_frames():
+    customlog.info("Started capturing frames...")
+    cap = cv2.VideoCapture(0)
+    cap.set(3, 640)
+    cap.set(4, 480)
+
+    while capture_event.is_set():
+        success, frame = cap.read()
+        if not success:
+            customlog.error("Failed to grab frame while capturing the frame")
+            break
+        if frame_queue.full():
+            frame_queue.get_nowait()
+        if not frame_queue.full():
+            frame_queue.put(frame)
+        else:
+            customlog.warning("Frame queue is full, dropping frame.")
+        time.sleep(0.1)  # Add a small delay to avoid hogging CPU
+    cap.release()
+
+def gen_frames():
+    detectiontime = time.time()
+    timeout = 60
+
+    startCapturing()
+    while True:
+        if not frame_queue.empty():
+            frame = frame_queue.get()
+            if time.time() - detectiontime > timeout:
+                customlog.info("Stopping license plate detection due to inactivity...")
+                break
+            # Encoding the frame as JPEG
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+        time.sleep(0.15)
+    stopCapturing()
 
 def naruto():
     try:
@@ -167,7 +228,7 @@ def sanji(image: np.ndarray):
         if result:
             detectedtext = result[0][1].upper().strip()
             accuracy = result[0][2] * 100
-            if accuracy >= 60:
+            if accuracy >= 40:
                 if validateplate(detectedtext):
                     formattedplate = formatplate(detectedtext)
                     if formattedplate in duplicateplates:
@@ -186,29 +247,25 @@ def sanji(image: np.ndarray):
     return None, 0
 
 def goku(backgroundtasks: BackgroundTasks):
-    cap = cv2.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
-
     customlog.info("Started capturing license plate...")
-
     detectiontime = time.time()
     timeout = 60
 
+    startCapturing()
     while True:
-        success, img = cap.read()
-        if not success:
-            customlog.error("Failed to grab frame")
-            break
+        if not frame_queue.empty():
+            frame = frame_queue.get()
 
-        detectedtext, accuracy = sanji(img)  # sanji already handles logging
-        if detectedtext:
-            detectiontime = time.time()
-        elif time.time() - detectiontime > timeout:
-            customlog.info("Stopping license plate detection due to inactivity...")
-            break
+            detectedtext, accuracy = sanji(frame)  # sanji already handles logging
+            if detectedtext:
+                detectiontime = time.time()
+            elif time.time() - detectiontime > timeout:
+                customlog.info("Stopping license plate detection due to inactivity...")
+                break
 
-    cap.release()
+        time.sleep(0.1)
+    customlog.info("Finished license plate detection.")
+    stopCapturing()
 
 @luffy.get("/licenseplate")
 async def ichigo(backgroundtasks: BackgroundTasks):
@@ -216,6 +273,10 @@ async def ichigo(backgroundtasks: BackgroundTasks):
     backgroundtasks.add_task(goku, backgroundtasks)
     customlog.info("Started to capture license plate...")
     return {"message": "Capturing License Plate..."}
+
+@luffy.get("/video_feed")
+async def video_feed():
+    return StreamingResponse(gen_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
 
 @luffy.get("/database")
 async def sasuke():
@@ -262,6 +323,11 @@ async def servererror():
 Cleardata = True #change it to true or false. True clears the database and false does not clear the database
 
 if __name__ == "__main__":
+    # Start the frame capture thread before running the FastAPI app
+    frame_capture_thread = threading.Thread(target=capture_frames)
+    frame_capture_thread.daemon = True  # Ensure the thread exits when the program exits
+    frame_capture_thread.start()
+
     if Cleardata:
         cleardata()
     uvicorn.run(luffy, host="127.0.0.1", port=8000)
