@@ -39,7 +39,8 @@ capture_event = threading.Event()
 # global vidoe capture
 cap = ""
 # global frame queue
-frame_queue = Queue(maxsize=60)
+queue_size = os.getenv("FRAME_QUEUE_SIZE")
+frame_queue = Queue(maxsize=int(queue_size or 20))
 # cap.set(3, 640)
 # cap.set(4, 480)
 
