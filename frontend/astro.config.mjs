@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
-import basicSsl from '@vitejs/plugin-basic-ssl';
+import basicSsl from "@vitejs/plugin-basic-ssl";
 
 import tailwindcss from "@tailwindcss/vite";
 
@@ -10,8 +10,8 @@ export default defineConfig({
     plugins: [tailwindcss(), basicSsl()],
     server: {
       https: {
-        insecureHTTPParser: true
-      }
-    }
+        insecureHTTPParser: true,
+      },
+    },
   },
 });
