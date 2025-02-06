@@ -1,27 +1,41 @@
 ---
 const licenseplate = import.meta.env.LICENSEPLATE;
-const videofeed = licenseplate.concat("/", "video_feed")
-console.log(videofeed)
+const videofeed = licenseplate.concat("/", "video_feed");
+const licenseNumber = licenseplate.concat("/", "licenseplate");
+// test licenseplate here set a websocket connection. and validator here
+// so we double validate teh license
+// one at the python level which is a simple validation
+// second at the js level which is here we do another validation
+// here we add spaces if needed mostly we don't need that.
 ---
 
 <div class="container mx-auto border-2 rounded-2xl text-center p-4 my-8">
   <div class="grid md:grid-cols-2 grid-rows-2 md:gap-12 gap-4">
     <div class="md:border-r-2 border-b-2 md:border-b-0">
-        <img src={videofeed}  />
-        <!-- <img style="display: block; user-select: none; margin: auto; background-color: rgb(64, 64, 64); --darkreader-inline-bgcolor: #303436;" src="http://localhost:8001/video_feed" data-darkreader-inline-bgcolor=""> -->
+      <img src={videofeed} />
+      <!-- <img style="display: block; user-select: none; margin: auto; background-color: rgb(64, 64, 64); --darkreader-inline-bgcolor: #303436;" src="http://localhost:8001/video_feed" data-darkreader-inline-bgcolor=""> -->
     </div>
 
     <!-- form gose below -->
     <div class="text-left">
       <h1 class="font-bold text-2xl text-center">Vehicle Details 🚗..</h1>
       <form class="flex flex-col bg-white rounded shadow-lg p-12" action="">
-        <label class="font-semibold text-xs" for="plate"
-          >Number Plate</label
-        >
+        <div class="flex flex-row gap-x-12 justify-baseline items-baseline">
+          <label class="font-semibold text-xs" for="plate">Number Plate</label>
+
+          <button
+            type="submit"
+            class="flex items-center justify-center w-fit px-4 py-2 bg-gray-200 text-black mt-8 rounded-4xl font-semibold text-sm hover:text-white hover:bg-blue-700"
+            >Refresh ⟳
+          </button>
+        </div>
+
         <input
           class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2"
+          name="plate"
           type="text"
         />
+
         <label class="font-semibold text-xs mt-3" for="ownername"
           >Owner Name</label
         >
@@ -30,17 +44,23 @@ console.log(videofeed)
           name="ownername"
           type="text"
         />
+
+        <label class="font-semibold text-xs mt-3" for="paid">Paid</label>
+        <input
+          class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2"
+          name="paid"
+          type="text"
+        />
+
         <button
           class="flex items-center justify-center h-12 px-6 w-64 bg-blue-600 mt-8 rounded font-semibold text-sm text-blue-100 hover:bg-blue-700"
-          >Login</button
+          >Check in</button
         >
-        <div class="flex mt-6 justify-center text-xs">
-          <a class="text-blue-400 hover:text-blue-500" href="#"
-            >Forgot Password</a
-          >
-          <span class="mx-2 text-gray-300">/</span>
-          <a class="text-blue-400 hover:text-blue-500" href="#">Sign Up</a>
-        </div>
+        <!-- <div class="flex mt-6 justify-center text-xs"> -->
+        <!--   <a class="text-blue-400 hover:text-blue-500" href="#" -->
+        <!--     >Forgot Password</a> -->
+        <!--   <span class="mx-2 text-gray-300">/</span> -->
+        <!--   <a class="text-blue-400 hover:text-blue-500" href="#">Sign Up</a> -->
       </form>
     </div>
   </div>
