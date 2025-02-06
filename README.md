@@ -4,7 +4,7 @@
 # License Plate Detection API
 
 # Commands to RUNN
-```
+```sh
 ❯ docker build -t licenseplate:testing . && dc down && dc up -d && d container logs licenseplate-server -f
 ```
 
