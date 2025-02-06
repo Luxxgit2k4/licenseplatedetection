@@ -2,15 +2,13 @@
 const licenseplate = import.meta.env.LICENSEPLATE;
 const videofeed = licenseplate.concat("/", "video_feed");
 const licenseNumber = licenseplate.concat("/", "licenseplate");
-// test licenseplate here set a websocket connection. and validator here
-// so we double validate teh license
-// one at the python level which is a simple validation
-// second at the js level which is here we do another validation
-// here we add spaces if needed mostly we don't need that.
-// -- create a ws connection and send the results from the server to the client
-// results should contain all the Details
-// also allow client
-// includes working on the login mechanism having a login form then logging in via that
+// no need for websocket connection just create a api request and get the values
+// if you find the license plate in the registered users list get the username and the list.
+
+// fetch data inside react client side
+const response = await fetch('https://randomuser.me/api/');
+const data = await response.json();
+const randomUser = data.results[0];
 ---
 
 <div class="container mx-auto border-2 rounded-2xl text-center p-4 my-8">
@@ -23,49 +21,7 @@ const licenseNumber = licenseplate.concat("/", "licenseplate");
     <!-- form gose below -->
     <div class="text-left">
       <h1 class="font-bold text-2xl text-center">Vehicle Details 🚗..</h1>
-      <form class="flex flex-col bg-white rounded shadow-lg p-12" action="">
-        <div class="flex flex-row gap-x-12 justify-baseline items-baseline">
-          <label class="font-semibold text-xs" for="plate">Number Plate</label>
 
-          <button
-            type="submit"
-            class="flex items-center justify-center w-fit px-4 py-2 bg-gray-200 text-black mt-8 rounded-4xl font-semibold text-sm hover:text-white hover:bg-blue-700"
-            >Refresh ⟳
-          </button>
-        </div>
-
-        <input
-          class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2"
-          name="plate"
-          type="text"
-        />
-
-        <label class="font-semibold text-xs mt-3" for="ownername"
-          >Owner Name</label
-        >
-        <input
-          class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2"
-          name="ownername"
-          type="text"
-        />
-
-        <label class="font-semibold text-xs mt-3" for="paid">Paid</label>
-        <input
-          class="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2"
-          name="paid"
-          type="text"
-        />
-
-        <button
-          class="flex items-center justify-center h-12 px-6 w-64 bg-blue-600 mt-8 rounded font-semibold text-sm text-blue-100 hover:bg-blue-700"
-          >Check in</button
-        >
-        <!-- <div class="flex mt-6 justify-center text-xs"> -->
-        <!--   <a class="text-blue-400 hover:text-blue-500" href="#" -->
-        <!--     >Forgot Password</a> -->
-        <!--   <span class="mx-2 text-gray-300">/</span> -->
-        <!--   <a class="text-blue-400 hover:text-blue-500" href="#">Sign Up</a> -->
-      </form>
     </div>
   </div>
 </div>
