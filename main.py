@@ -202,53 +202,60 @@ if shinpachi.empty():
     exit()
 
 
-
 def detectLicensePlate(image: np.ndarray):
+    # Convert image to grayscale
     imggray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     height, width = imggray.shape
-    roi = imggray[int(height / 2):, :]
+    roi = imggray[int(height / 2):, :]  # Focus on the lower half of the image (where plates are)
 
-    plates = shinpachi.detectMultiScale(
-        roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50)
-    )
+    # Detect plates in the region of interest
+    plates = shinpachi.detectMultiScale(roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50))
+
     largest = None
     largestarea = 0
 
+    # Iterate over detected plates to find the largest one
     for x, y, w, h in plates:
         area = w * h
-        if area > 1000:
-            y += int(height / 2)
+        if area > 1000:  # Ignore small plates
+            y += int(height / 2)  # Adjust y position to the full image
             ratio = w / h
-            if 2.0 < ratio < 6.0:
+            if 2.0 < ratio < 6.0:  # Check for plate aspect ratio
                 if largest is None or area > largestarea:
                     largest = (x, y, w, h)
                     largestarea = area
+                # Optionally, draw the rectangle (for debugging purposes)
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
     if largest is not None:
+        # Crop the plate image
         (x, y, w, h) = largest
         plateimg = image[y:y + h, x:x + w]
+
+        # Recognize text from the cropped plate
         result = nami.readtext(plateimg)
         if result:
             detectedtext = result[0][1].upper().strip()
-            accuracy = result[0][2] * 100
-            if accuracy >= 40:
-                cleaned = detectedtext.replace(" ", "").upper()
-                if validateplate(cleaned):
-                    formattedplate = formatplate(cleaned)
+            accuracy = result[0][2] * 100  # Convert accuracy to percentage
+            if accuracy >= 40:  # Only proceed if accuracy is reasonable
+                cleaned = detectedtext.replace(" ", "").upper()  # Clean the detected text
+                if validateplate(cleaned):  # Validate the license plate format
+                    formattedplate = formatplate(cleaned)  # Format plate
+                    # Check if the plate has already been detected
                     if formattedplate in duplicateplates:
                         customlog.info(f"License plate {formattedplate} already detected, skipping detection...")
                         return None, 0
                     duplicateplates.add(formattedplate)
+
                     entered = True
                     customlog.info(f"Valid license plate detected: {formattedplate} with accuracy {accuracy:.2f}%")
-                    zoro(formattedplate, entered, accuracy)
+                    zoro(formattedplate, entered, accuracy)  # Assuming `zoro` logs or stores the plate in a database
                     customlog.info(f"Inserted license plate {formattedplate} into database with accuracy {accuracy:.2f}%.")
                     return formattedplate, accuracy
                 else:
                     customlog.info(f"Detected plate '{detectedtext}' does not appear to be a valid license plate.")
             else:
-                customlog.info(f"The accuracy of the license plate is less, skipping inserting into the database...")
+                customlog.info(f"Detected plate with low accuracy: {detectedtext} ({accuracy:.2f}%), skipping.")
     return None, 0
 
 def licenseplatebackgroundTask(backgroundtasks: BackgroundTasks):
