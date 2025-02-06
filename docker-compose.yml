@@ -1,12 +1,12 @@
 services:
   postgres:
-    container_name: postgres-db
+    container_name: license-db
     image: postgres:16.6
-    hostname: localhost
+    hostname: license-db
     ports:
       - "5433:5432"
     networks:
-      - localhost
+      - license
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -16,13 +16,13 @@ services:
     restart: unless-stopped
 
   licenseplate:
-    container_name: licenseplate-server
+    container_name: license-server
     image: licenseplate:testing
-    hostname: localhost
+    hostname: license-server
     depends_on:
       - postgres
     networks:
-      - localhost
+      - license
     ports:
       - "8001:8000"
     volumes:
@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
 
 networks:
-  localhost:
+  license:
     external: false
 
 volumes:
