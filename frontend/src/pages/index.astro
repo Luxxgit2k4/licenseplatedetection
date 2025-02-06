@@ -6,48 +6,50 @@ import Info from "../components/Info.astro";
 // Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
+
 <Layout>
   <div class="bg-black min-h-screen text-white flex flex-col items-center p-4">
     <header class="text-center mt-8">
       <p class="text-3xl font-bold">Find Your Parking Space</p>
     </header>
-<form class="p-4">
-  <label class="block text-white font-medium border border-gray-500 rounded-md w-70 p-2 text-center">
-    Search
-  </label>
-</form>
+    <form class="p-4">
+      <label
+        class="block text-white font-medium border border-gray-500 rounded-md w-70 p-2 text-center"
+      >
+        Search
+      </label>
+    </form>
     <div class="relative mt-10 w-full flex flex-col items-center">
-      <div class="bg-gray-900 w-full h-60 rounded-md flex items-center justify-center">
-        <p class="text-white-400 text-sm"> Dei punda</p>
+      <div
+        class="bg-gray-900 w-full h-60 rounded-md flex items-center justify-center"
+      >
+        <p class="text-white-400 text-sm">Dei punda</p>
       </div>
-   <div class="mt-6 w-80 bg-sky-300 p-4 rounded-lg shadow-md flex items-center">
-        <img
-            src="/car.jpg"
-          alt="inga photo"
-          class="w-16 h-16 rounded-md"
-        />
+      <div
+        class="mt-6 w-80 bg-sky-300 p-4 rounded-lg shadow-md flex items-center"
+      >
+        <img src="/car.jpg" alt="inga photo" class="w-16 h-16 rounded-md" />
         <div class="ml-4">
           <p class="text-black font-bold">Kumar Theatre</p>
           <p class="text-black text-sm">Potta nagar</p>
-          <p class="text-black text-xs"> 1 per hr</p>
+          <p class="text-black text-xs">1 per hr</p>
         </div>
       </div>
     </div>
     <div class="flex justify-center mt-4">
-  <a href="/licenseplate" class="text-2xl text-white hover:text-blue-400 underline">
-    Licenseplate
-  </a>
-</div>
-    <footer class="fixed bottom-0 left-0 w-full bg-gray-900 p-2 flex justify-around items-center">
+      <a
+        href="/licenseplate"
+        class="text-2xl text-white hover:text-blue-400 underline"
+      >
+        Licenseplate
+      </a>
+    </div>
+    <footer
+      class="fixed bottom-0 left-0 w-full bg-gray-900 p-2 flex justify-around items-center"
+    >
       <button class="text-gray-400">Home</button>
       <button class="text-gray-400">Fav</button>
       <button class="text-gray-400">Not</button>
     </footer>
   </div>
 </Layout>
-
-
-
-
-
-
