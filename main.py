@@ -203,7 +203,7 @@ if shinpachi.empty():
 
 
 
-def sanji(image: np.ndarray):
+def detectLicensePlate(image: np.ndarray):
     imggray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     height, width = imggray.shape
     roi = imggray[int(height / 2):, :]
@@ -233,8 +233,9 @@ def sanji(image: np.ndarray):
             detectedtext = result[0][1].upper().strip()
             accuracy = result[0][2] * 100
             if accuracy >= 40:
-                if validateplate(detectedtext):
-                    formattedplate = formatplate(detectedtext)
+                cleaned = detectedtext.replace(" ", "").upper()
+                if validateplate(cleaned):
+                    formattedplate = formatplate(cleaned)
                     if formattedplate in duplicateplates:
                         customlog.info(f"License plate {formattedplate} already detected, skipping detection...")
                         return None, 0
@@ -260,7 +261,7 @@ def licenseplatebackgroundTask(backgroundtasks: BackgroundTasks):
         if not frame_queue.empty():
             frame = frame_queue.get()
 
-            detectedtext, accuracy = sanji(frame)  # sanji already handles logging
+            detectedtext, accuracy = detectLicensePlate(frame)  # sanji already handles logging intha koothi laa venam
             if detectedtext:
                 detectiontime = time.time()
             elif time.time() - detectiontime > timeout:
