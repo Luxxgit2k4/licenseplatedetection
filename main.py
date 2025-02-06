@@ -1,4 +1,5 @@
 import logging
+import asyncio
 import sys
 import threading
 from io import BytesIO
@@ -281,9 +282,6 @@ def detectLicensePlate(image: np.ndarray):
 
                     # Log the results
                     customlog.info(f"Valid license plate detected: {formatted_plate} with accuracy {accuracy:.2f}%")
-                    insert_into_database(formatted_plate, entered, accuracy)  # Assuming this function handles database insertions
-
-                    customlog.info(f"Inserted license plate {formatted_plate} into database with accuracy {accuracy:.2f}%.")
                     return formatted_plate, accuracy
                 else:
                     customlog.info(f"Detected plate '{detected_text}' does not appear to be a valid license plate.")
@@ -291,7 +289,7 @@ def detectLicensePlate(image: np.ndarray):
                 customlog.info(f"Detected plate with low accuracy: {detected_text} ({accuracy:.2f}%), skipping.")
     return None, 0
 
-def licenseplatebackgroundTask(backgroundtasks: BackgroundTasks):
+async def licenseplatebackgroundTask():
     customlog.info("Started capturing license plate...")
     detectiontime = time.time()
     timeout = 60
@@ -304,20 +302,32 @@ def licenseplatebackgroundTask(backgroundtasks: BackgroundTasks):
             detectedtext, accuracy = detectLicensePlate(frame)  # sanji already handles logging intha koothi laa venam
             if detectedtext:
                 detectiontime = time.time()
+                entered = True
+                insert_into_database(detectedtext, entered, accuracy)  # Assuming this function handles database insertions
+                customlog.info(f"Inserted license plate {detectedtext} into database with accuracy {accuracy:.2f}%.")
+                break
             elif time.time() - detectiontime > timeout:
                 customlog.info("Stopping license plate detection due to inactivity...")
                 break
 
-        time.sleep(0.1)
+        await asyncio.sleep(0.1)
     customlog.info("Finished license plate detection.")
     stopCapturing()
+    return detectedtext, accuracy
 
 @luffy.get("/licenseplate")
 async def l_plate_handler(backgroundtasks: BackgroundTasks):
     """Endpoint to start webcam capture."""
-    backgroundtasks.add_task(licenseplatebackgroundTask, backgroundtasks)
+    # backgroundtasks.add_task(licenseplatebackgroundTask, backgroundtasks)
     customlog.info("Started to capture license plate...")
-    return {"message": "Capturing License Plate..."}
+    # Wait for the background task to finish and get the result
+    # Run the background task and get the result
+    detectedtext, accuracy = await licenseplatebackgroundTask()
+
+    if detectedtext:
+        return {"message": "License Plate Captured", "license_plate": detectedtext, "accuracy": accuracy}
+    else:
+        return {"message": "License Plate Detection Timeout or Failed", "accuracy": accuracy}
 
 @luffy.get("/video_feed")
 async def video_feed():
