@@ -25,8 +25,6 @@ services:
       - license
     ports:
       - "8001:8000"
-    volumes:
-      - /dev/video0:/dev/video0
     devices:
       - /dev/video0
     deploy:
