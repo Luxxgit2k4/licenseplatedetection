@@ -4,8 +4,10 @@
 # License Plate Detection API
 
 # Commands to RUNN
+only one single command need to be run
+
 ```sh
-❯ docker build -t licenseplate:testing . && dc down && dc up -d && d container logs licenseplate-server -f
+❯ docker build -t licenseplate:testing . && dc down && dc up -d && d container logs license-server -f
 ```
 
 1. docker compose down
