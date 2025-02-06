@@ -208,7 +208,7 @@ if plate_cascade.empty():
 customlog.info("Cascade classifier loaded successfully, ready for license plate detection.")
 
 
-def detect_license_plate(image: np.ndarray):
+def detectLicensePlate(image: np.ndarray):
     """
     Detects a license plate in an image, performs text recognition, validates,
     and logs the results. Avoids processing duplicate plates.
