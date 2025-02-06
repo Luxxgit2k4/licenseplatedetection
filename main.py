@@ -16,10 +16,21 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 luffy = FastAPI()
 # stopcamera = threading.Event()
+
+# CORS
+origins = ["*"]
+luffy.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # logger = logging.getLogger("uvicorn")
