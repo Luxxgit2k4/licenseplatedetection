@@ -106,7 +106,7 @@ def gen_frames():
         time.sleep(0.15)
     stopCapturing()
 
-def naruto():
+def dbConnector():
     try:
         conn = psycopg2.connect(
             host= os.getenv("DB_HOST"),
@@ -154,7 +154,7 @@ def naruto():
         return None
 
 def cleardata():
-    conn = naruto()
+    conn = dbConnector()
     if conn:
         try:
             cursor = conn.cursor()
@@ -169,7 +169,7 @@ def cleardata():
 
 
 def zoro(plate, entered, accuracy):
-    conn = naruto()
+    conn = dbConnector()
     if conn:
         kakashi = conn.cursor()
         accuracy = round(accuracy)
@@ -247,7 +247,7 @@ def sanji(image: np.ndarray):
                 customlog.info(f"The accuracy of the license plate is less, skipping inserting into the database...")
     return None, 0
 
-def goku(backgroundtasks: BackgroundTasks):
+def licenseplatebackgroundTask(backgroundtasks: BackgroundTasks):
     customlog.info("Started capturing license plate...")
     detectiontime = time.time()
     timeout = 60
@@ -269,9 +269,9 @@ def goku(backgroundtasks: BackgroundTasks):
     stopCapturing()
 
 @luffy.get("/licenseplate")
-async def ichigo(backgroundtasks: BackgroundTasks):
+async def l_plate_handler(backgroundtasks: BackgroundTasks):
     """Endpoint to start webcam capture."""
-    backgroundtasks.add_task(goku, backgroundtasks)
+    backgroundtasks.add_task(licenseplatebackgroundTask, backgroundtasks)
     customlog.info("Started to capture license plate...")
     return {"message": "Capturing License Plate..."}
 
@@ -280,19 +280,19 @@ async def video_feed():
     return StreamingResponse(gen_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
 
 @luffy.get("/database")
-async def sasuke():
+async def dbHandler():
     """Endpoint to fetch all license plates from the database."""
-    conn = naruto()
+    conn = dbConnector()
     if not conn:
         customlog.error("Failed to connect to the database.")
         return {"error": "Failed to connect to the database"}
 
     try:
-        kakashi = conn.cursor()
+        dbCursor = conn.cursor()
         query = "SELECT * FROM plates;"
-        kakashi.execute(query)
-        records = kakashi.fetchall()
-        kakashi.close()
+        dbCursor.execute(query)
+        records = dbCursor.fetchall()
+        dbCursor.close()
         conn.close()
         plates = [
             {
