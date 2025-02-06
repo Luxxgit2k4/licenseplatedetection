@@ -237,7 +237,9 @@ def detect_license_plate(image: np.ndarray):
         plate_area = w * h
 
         # Filter out small or irrelevant areas
-        if plate_area > 1000:
+        # if plate_area > 1000:
+        # reducing this to 500 to check whether this will work : exp : todo
+        if plate_area > 500:
             y += int(height / 2)  # Adjust y position to the full image height
             aspect_ratio = w / h
 
