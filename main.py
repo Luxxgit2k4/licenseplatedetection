@@ -1,24 +1,25 @@
-import logging
 import asyncio
+import logging
+import os
+import re
 import sys
 import threading
+import time
 from io import BytesIO
+from queue import Queue
+
 import cv2
 import easyocr
 import numpy as np
 import psycopg2
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
-from dotenv import load_dotenv
-from queue import Queue
-import os
-import time
-import re
 
 load_dotenv()
 luffy = FastAPI()
-#stopcamera = threading.Event()
+# stopcamera = threading.Event()
 
 
 # logger = logging.getLogger("uvicorn")
@@ -46,6 +47,7 @@ frame_queue = Queue(maxsize=int(queue_size or 20))
 # cap.set(3, 640)
 # cap.set(4, 480)
 
+
 def formatplate(plate: str) -> str:
     cleaned = plate.replace(" ", "").upper()
     cleaned = re.sub(r"^[^A-Z0-9]*", "", cleaned)
@@ -53,17 +55,20 @@ def formatplate(plate: str) -> str:
         return f"{cleaned[0:2]} {cleaned[2:4]} {cleaned[4:6]} {cleaned[6:10]}"
     return cleaned
 
+
 def validateplate(plate: str) -> bool:
     # Indian license plate regex pattern:
     # Format: [State Code][District Code][Number] (optionally followed by a letter or more numbers)
-    pattern = r'^[A-Z]{2}[0-9]{1,2}[A-Z]{0,2}[0-9]{1,4}$'
+    pattern = r"^[A-Z]{2}[0-9]{1,2}[A-Z]{0,2}[0-9]{1,4}$"
     return bool(re.match(pattern, plate))
+
 
 def startCapturing():
     capture_event.set()
     frame_capture_thread = threading.Thread(target=capture_frames)
     frame_capture_thread.daemon = True  # Ensure the thread exits when the program exits
     frame_capture_thread.start()
+
 
 def stopCapturing():
     capture_event.clear()
@@ -90,6 +95,7 @@ def capture_frames():
         time.sleep(0.1)  # Add a small delay to avoid hogging CPU
     cap.release()
 
+
 def gen_frames():
     detectiontime = time.time()
     timeout = 60
@@ -102,23 +108,25 @@ def gen_frames():
                 customlog.info("Stopping license plate detection due to inactivity...")
                 break
             # Encoding the frame as JPEG
-            ret, buffer = cv2.imencode('.jpg', frame)
+            ret, buffer = cv2.imencode(".jpg", frame)
             frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+            yield (
+                b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n\r\n"
+            )
 
         time.sleep(0.15)
     stopCapturing()
 
+
 def dbConnector():
     try:
         conn = psycopg2.connect(
-            host= os.getenv("DB_HOST"),
-            port= os.getenv("DB_PORT"),
-            dbname= os.getenv("DB_NAME"),
-            user= os.getenv("DB_USER"),
-            password= os.getenv("DB_PASSWORD")
-            )
+            host=os.getenv("DB_HOST"),
+            port=os.getenv("DB_PORT"),
+            dbname=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+        )
 
         conn.autocommit = True
         cursor = conn.cursor()
@@ -133,11 +141,11 @@ def dbConnector():
         conn.close()
 
         conn = psycopg2.connect(
-           host= os.getenv("DB_HOST"),
-            port= os.getenv("DB_PORT"),
-            dbname= os.getenv("DB_NAME"),
-            user= os.getenv("DB_USER"),
-            password= os.getenv("DB_PASSWORD")
+            host=os.getenv("DB_HOST"),
+            port=os.getenv("DB_PORT"),
+            dbname=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
         )
 
         cursor = conn.cursor()
@@ -157,6 +165,7 @@ def dbConnector():
         customlog.error(f"Error connecting to database: {e}")
         return None
 
+
 def cleardata():
     conn = dbConnector()
     if conn:
@@ -175,7 +184,7 @@ def cleardata():
 def insert_into_database(plate, entered, accuracy):
     conn = dbConnector()
     if conn:
-        kakashi = conn.cursor()
+        db = conn.cursor()
         accuracy = round(accuracy)
         query = """
         INSERT INTO plates (license_plate_number, vehicle_entered, accuracy_percentage)
@@ -183,21 +192,21 @@ def insert_into_database(plate, entered, accuracy):
         ON CONFLICT (license_plate_number)
         DO UPDATE SET accuracy_percentage = EXCLUDED.accuracy_percentage;
         """
-        kakashi.execute(query, (plate, entered, accuracy))
+        db.execute(query, (plate, entered, accuracy))
         conn.commit()
-        kakashi.close()
+        db.close()
         conn.close()
         customlog.info(
             f"Inserted license plate {plate} into database with accuracy {accuracy}%."
         )
-        return True;
+        return True
     else:
         customlog.error("Failed to insert data into database.")
-        return False;
+        return False
 
 
 # Initialize the OCR reader for English
-ocr_reader = easyocr.Reader(['en'])
+ocr_reader = easyocr.Reader(["en"])
 # Path to the Haar cascade XML file for license plate detection
 cascade_file_path = "model/indian_license_plate.xml"
 # Initialize the Haar Cascade Classifier for license plate detection
@@ -208,7 +217,9 @@ if plate_cascade.empty():
     raise Exception("Failed to load the license plate detection model.")
 
 # Proceed with your license plate detection logic (example)
-customlog.info("Cascade classifier loaded successfully, ready for license plate detection.")
+customlog.info(
+    "Cascade classifier loaded successfully, ready for license plate detection."
+)
 
 
 def detectLicensePlate(image: np.ndarray):
@@ -227,10 +238,12 @@ def detectLicensePlate(image: np.ndarray):
     height, width = gray_image.shape
 
     # Focus on the lower half of the image (common region for license plates)
-    roi = gray_image[int(height / 2):, :]
+    roi = gray_image[int(height / 2) :, :]
 
     # Detect possible plates in the region of interest
-    plates = plate_cascade.detectMultiScale(roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50))
+    plates = plate_cascade.detectMultiScale(
+        roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50)
+    )
 
     # Initialize variables for the largest detected plate
     largest_plate = None
@@ -258,7 +271,7 @@ def detectLicensePlate(image: np.ndarray):
     # If a valid plate was detected, process it
     if largest_plate is not None:
         x, y, w, h = largest_plate
-        plate_image = image[y:y + h, x:x + w]
+        plate_image = image[y : y + h, x : x + w]
 
         # Perform text recognition on the cropped plate image
         result = ocr_reader.readtext(plate_image)
@@ -268,7 +281,9 @@ def detectLicensePlate(image: np.ndarray):
 
             # Only proceed if the accuracy is above a threshold
             if accuracy >= 40:
-                cleaned_text = detected_text.replace(" ", "").upper()  # Clean the detected text
+                cleaned_text = detected_text.replace(
+                    " ", ""
+                ).upper()  # Clean the detected text
 
                 # Validate the detected plate's format
                 if validateplate(cleaned_text):
@@ -276,20 +291,29 @@ def detectLicensePlate(image: np.ndarray):
 
                     # Check for duplicates to avoid re-processing the same plate
                     if formatted_plate in duplicateplates:
-                        customlog.info(f"License plate {formatted_plate} already detected, skipping detection...")
+                        customlog.info(
+                            f"License plate {formatted_plate} already detected, skipping detection..."
+                        )
                         return None, 0
 
                     duplicateplates.add(formatted_plate)
                     entered = True
 
                     # Log the results
-                    customlog.info(f"Valid license plate detected: {formatted_plate} with accuracy {accuracy:.2f}%")
+                    customlog.info(
+                        f"Valid license plate detected: {formatted_plate} with accuracy {accuracy:.2f}%"
+                    )
                     return formatted_plate, accuracy
                 else:
-                    customlog.info(f"Detected plate '{detected_text}' does not appear to be a valid license plate.")
+                    customlog.info(
+                        f"Detected plate '{detected_text}' does not appear to be a valid license plate."
+                    )
             else:
-                customlog.info(f"Detected plate with low accuracy: {detected_text} ({accuracy:.2f}%), skipping.")
+                customlog.info(
+                    f"Detected plate with low accuracy: {detected_text} ({accuracy:.2f}%), skipping."
+                )
     return None, 0
+
 
 async def licenseplatebackgroundTask():
     customlog.info("Started capturing license plate...")
@@ -301,15 +325,21 @@ async def licenseplatebackgroundTask():
         if not frame_queue.empty():
             frame = frame_queue.get()
 
-            detectedtext, accuracy = detectLicensePlate(frame)  # sanji already handles logging intha koothi laa venam
+            detectedtext, accuracy = detectLicensePlate(
+                frame
+            )  # sanji already handles logging intha koothi laa venam
             if detectedtext:
                 detectiontime = time.time()
                 entered = True
                 inserted = False
                 while not inserted:
-                    inserted = insert_into_database(detectedtext, entered, accuracy)  # Assuming this function handles database insertions
+                    inserted = insert_into_database(
+                        detectedtext, entered, accuracy
+                    )  # Assuming this function handles database insertions
                     if inserted:
-                        customlog.info(f"Inserted license plate {detectedtext} into database with accuracy {accuracy:.2f}%.")
+                        customlog.info(
+                            f"Inserted license plate {detectedtext} into database with accuracy {accuracy:.2f}%."
+                        )
                         break
                     customlog.info("retrying inserting to db")
                 break
@@ -324,6 +354,7 @@ async def licenseplatebackgroundTask():
     stopCapturing()
     return detectedtext, accuracy
 
+
 @luffy.get("/licenseplate")
 async def l_plate_handler(backgroundtasks: BackgroundTasks):
     """Endpoint to start webcam capture."""
@@ -334,13 +365,24 @@ async def l_plate_handler(backgroundtasks: BackgroundTasks):
     detectedtext, accuracy = await licenseplatebackgroundTask()
 
     if detectedtext:
-        return {"message": "License Plate Captured", "license_plate": detectedtext, "accuracy": accuracy}
+        return {
+            "message": "License Plate Captured",
+            "license_plate": detectedtext,
+            "accuracy": accuracy,
+        }
     else:
-        return {"message": "License Plate Detection Timeout or Failed", "accuracy": accuracy}
+        return {
+            "message": "License Plate Detection Timeout or Failed",
+            "accuracy": accuracy,
+        }
+
 
 @luffy.get("/video_feed")
 async def video_feed():
-    return StreamingResponse(gen_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
+    return StreamingResponse(
+        gen_frames(), media_type="multipart/x-mixed-replace; boundary=frame"
+    )
+
 
 @luffy.get("/database")
 async def dbHandler():
@@ -378,13 +420,14 @@ async def dbHandler():
 async def servererror():
     raise Exception("Server error for testing logging")
 
+
 # log_config = uvicorn.config.LOGGING_CONFIG
 # log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s - %(remote_addr)s - %(request_method)s - %(path)s - %(status_code)s"
 #
 #
 # log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
 
-Cleardata = True #change it to true or false. True clears the database and false does not clear the database
+Cleardata = True  # change it to true or false. True clears the database and false does not clear the database
 
 if __name__ == "__main__":
     # Start the frame capture thread before running the FastAPI app
