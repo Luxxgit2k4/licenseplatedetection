@@ -1,9 +1,8 @@
-# licenseplatedetection
-## bupd
+# License Plate Detection
+## API/UI
 
-# License Plate Detection API
-
-# Commands to RUNN
+# SETUP
+## Commands to RUN
 only one single command need to be run
 
 ```sh
