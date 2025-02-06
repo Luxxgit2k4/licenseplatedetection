@@ -171,7 +171,7 @@ def cleardata():
             conn.close()
 
 
-def zoro(plate, entered, accuracy):
+def insert_into_database(plate, entered, accuracy):
     conn = dbConnector()
     if conn:
         kakashi = conn.cursor()
@@ -193,69 +193,100 @@ def zoro(plate, entered, accuracy):
         customlog.error("Failed to insert data into database.")
 
 
-nami = easyocr.Reader(["en"])
-gintoki = "model/indian_license_plate.xml"
-shinpachi = cv2.CascadeClassifier(gintoki)
+# Initialize the OCR reader for English
+ocr_reader = easyocr.Reader(['en'])
+# Path to the Haar cascade XML file for license plate detection
+cascade_file_path = "model/indian_license_plate.xml"
+# Initialize the Haar Cascade Classifier for license plate detection
+plate_cascade = cv2.CascadeClassifier(cascade_file_path)
+# Check if the cascade classifier is loaded correctly
+if plate_cascade.empty():
+    customlog.error("Error: Cascade classifier file not loaded correctly.")
+    raise Exception("Failed to load the license plate detection model.")
 
-if shinpachi.empty():
-    customlog.error("Error: Cascade file not loaded correctly.")
-    exit()
+# Proceed with your license plate detection logic (example)
+customlog.info("Cascade classifier loaded successfully, ready for license plate detection.")
 
 
-def detectLicensePlate(image: np.ndarray):
-    # Convert image to grayscale
-    imggray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    height, width = imggray.shape
-    roi = imggray[int(height / 2):, :]  # Focus on the lower half of the image (where plates are)
+def detect_license_plate(image: np.ndarray):
+    """
+    Detects a license plate in an image, performs text recognition, validates,
+    and logs the results. Avoids processing duplicate plates.
 
-    # Detect plates in the region of interest
-    plates = shinpachi.detectMultiScale(roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50))
+    Args:
+        image (np.ndarray): Input image for license plate detection.
 
-    largest = None
-    largestarea = 0
+    Returns:
+        tuple: License plate text and detection accuracy, or None if no valid plate is detected.
+    """
+    # Convert image to grayscale for better detection accuracy
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    height, width = gray_image.shape
 
-    # Iterate over detected plates to find the largest one
+    # Focus on the lower half of the image (common region for license plates)
+    roi = gray_image[int(height / 2):, :]
+
+    # Detect possible plates in the region of interest
+    plates = plate_cascade.detectMultiScale(roi, scaleFactor=1.1, minNeighbors=12, minSize=(50, 50))
+
+    # Initialize variables for the largest detected plate
+    largest_plate = None
+    largest_area = 0
+
     for x, y, w, h in plates:
-        area = w * h
-        if area > 1000:  # Ignore small plates
-            y += int(height / 2)  # Adjust y position to the full image
-            ratio = w / h
-            if 2.0 < ratio < 6.0:  # Check for plate aspect ratio
-                if largest is None or area > largestarea:
-                    largest = (x, y, w, h)
-                    largestarea = area
-                # Optionally, draw the rectangle (for debugging purposes)
+        plate_area = w * h
+
+        # Filter out small or irrelevant areas
+        if plate_area > 1000:
+            y += int(height / 2)  # Adjust y position to the full image height
+            aspect_ratio = w / h
+
+            # Check if the aspect ratio is within a typical license plate range
+            if 2.0 < aspect_ratio < 6.0:
+                if largest_plate is None or plate_area > largest_area:
+                    largest_plate = (x, y, w, h)
+                    largest_area = plate_area
+
+                # Optionally, draw the rectangle around the detected plate (for debugging purposes)
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    if largest is not None:
-        # Crop the plate image
-        (x, y, w, h) = largest
-        plateimg = image[y:y + h, x:x + w]
+    # If a valid plate was detected, process it
+    if largest_plate is not None:
+        x, y, w, h = largest_plate
+        plate_image = image[y:y + h, x:x + w]
 
-        # Recognize text from the cropped plate
-        result = nami.readtext(plateimg)
+        # Perform text recognition on the cropped plate image
+        result = ocr_reader.readtext(plate_image)
         if result:
-            detectedtext = result[0][1].upper().strip()
+            detected_text = result[0][1].upper().strip()  # Extract text and clean it
             accuracy = result[0][2] * 100  # Convert accuracy to percentage
-            if accuracy >= 40:  # Only proceed if accuracy is reasonable
-                cleaned = detectedtext.replace(" ", "").upper()  # Clean the detected text
-                if validateplate(cleaned):  # Validate the license plate format
-                    formattedplate = formatplate(cleaned)  # Format plate
-                    # Check if the plate has already been detected
-                    if formattedplate in duplicateplates:
-                        customlog.info(f"License plate {formattedplate} already detected, skipping detection...")
-                        return None, 0
-                    duplicateplates.add(formattedplate)
 
+            # Only proceed if the accuracy is above a threshold
+            if accuracy >= 40:
+                cleaned_text = detected_text.replace(" ", "").upper()  # Clean the detected text
+
+                # Validate the detected plate's format
+                if validateplate(cleaned_text):
+                    formatted_plate = formatplate(cleaned_text)
+
+                    # Check for duplicates to avoid re-processing the same plate
+                    if formatted_plate in duplicateplates:
+                        customlog.info(f"License plate {formatted_plate} already detected, skipping detection...")
+                        return None, 0
+
+                    duplicateplates.add(formatted_plate)
                     entered = True
-                    customlog.info(f"Valid license plate detected: {formattedplate} with accuracy {accuracy:.2f}%")
-                    zoro(formattedplate, entered, accuracy)  # Assuming `zoro` logs or stores the plate in a database
-                    customlog.info(f"Inserted license plate {formattedplate} into database with accuracy {accuracy:.2f}%.")
-                    return formattedplate, accuracy
+
+                    # Log the results
+                    customlog.info(f"Valid license plate detected: {formatted_plate} with accuracy {accuracy:.2f}%")
+                    insert_into_database(formatted_plate, entered, accuracy)  # Assuming this function handles database insertions
+
+                    customlog.info(f"Inserted license plate {formatted_plate} into database with accuracy {accuracy:.2f}%.")
+                    return formatted_plate, accuracy
                 else:
-                    customlog.info(f"Detected plate '{detectedtext}' does not appear to be a valid license plate.")
+                    customlog.info(f"Detected plate '{detected_text}' does not appear to be a valid license plate.")
             else:
-                customlog.info(f"Detected plate with low accuracy: {detectedtext} ({accuracy:.2f}%), skipping.")
+                customlog.info(f"Detected plate with low accuracy: {detected_text} ({accuracy:.2f}%), skipping.")
     return None, 0
 
 def licenseplatebackgroundTask(backgroundtasks: BackgroundTasks):
