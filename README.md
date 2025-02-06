@@ -4,6 +4,10 @@
 # License Plate Detection API
 
 # Commands to RUNN
+```
+❯ docker build -t licenseplate:testing . && dc down && dc up -d && d container logs licenseplate-server -f
+```
+
 1. docker compose down
 2. docker build --secret id=myenv,src=.env -f Dockerfile -t safe .
 3. docker compose up -d
