@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 // interface MyComponentProps {
 //   licenseplate: string;
@@ -11,27 +11,43 @@ const MyComponent = ({ licenseNumberUrl }) => {
   const [licenseNumber, setLicenseNumber] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [paid, setPaid] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
   const [slot, setSlot] = useState(false);
 
   useEffect(() => {
     // Log the values passed from Astro (licenseplate, videofeed, and licenseNumber)
     console.log("License Number URL:", licenseNumberUrl);
 
+    fetch(licenseNumberUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("fucking data:", data); // Log the entire response
+        console.log("fucking data correct:", data.license_plate); // Access license_plate correctly
+        setLicenseNumber(data.license_plate);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+
+    // fetchLicensePlate();
     // Example: you could fetch data or take some action based on these values
   }, [licenseNumberUrl]);
 
-  function handlePaidChange(value) {
-    if (value == "yes" || value == "Yes") {
-      setPaid(true);
-    } else {
-      setPaid(false);
-    }
+  async function fetchLicensePlate() {
+    // GET request using fetch with async/await
+    const response = await fetch("https://api.npms.io/v2/search?q=react");
+    const data = await response.json();
+
+    console.log("data: ", data);
+    return data;
   }
+
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked);
+  };
 
   return (
     <form className="flex flex-col bg-white rounded shadow-lg p-12" action="">
       <div className="flex flex-row gap-x-12 justify-baseline items-baseline">
-        <label className="font-semibold text-xs" htmlFor="plate">
+        <label className="font-semibold text-xl" htmlFor="plate">
           Number Plate
         </label>
 
@@ -42,7 +58,6 @@ const MyComponent = ({ licenseNumberUrl }) => {
           Refresh ⟳
         </button>
       </div>
-
       <input
         className="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2"
         name="plate"
@@ -51,8 +66,7 @@ const MyComponent = ({ licenseNumberUrl }) => {
         onChange={(e) => setLicenseNumber(e.target.value)}
         // defaultValue={licenseplate}
       />
-
-      <label className="font-semibold text-xs mt-3" htmlFor="ownername">
+      <label className="font-semibold text-xl mt-3" htmlFor="ownername">
         Owner Name
       </label>
       <input
@@ -63,18 +77,20 @@ const MyComponent = ({ licenseNumberUrl }) => {
         onChange={(e) => setOwnerName(e.target.value)}
       />
 
-      <label className="font-semibold text-xs mt-3" htmlFor="paid">
+      <label className="font-semibold text-xl mt-8" htmlFor="paid">
         Paid
       </label>
-      <input
-        className="flex items-center h-12 px-4 w-64 bg-gray-200 mt-2 rounded focus:outline-none focus:ring-2"
-        name="paid"
-        type="text"
-        value={paid}
-        onChange={(e) => handlePaidChange(e.target.value)}
-      />
+      <label className="relative inline-flex items-center cursor-pointer my-4">
+        <input
+          type="checkbox"
+          checked={isChecked}
+          onChange={handleCheckboxChange}
+          className="sr-only peer"
+        />
+        <div className="group border border-gray-600  shadow-inner shadow-gray-900 peer ring-0  bg-gradient-to-tr from-rose-100 via-rose-400 to-rose-500  rounded-full outline-none duration-300 after:duration-300 w-24 h-12  shadow-md peer-checked:bg-emerald-500  peer-focus:outline-none  after:content-['✖️']  after:rounded-full after:absolute after:bg-gray-50 after:border after:border-gray-600 after:outline-none after:h-10 after:w-10 after:top-1 after:left-1 after:-rotate-180 after:flex after:justify-center after:items-center peer-checked:after:translate-x-12 peer-checked:after:content-['✔️'] peer-hover:after:scale-95 peer-checked:after:rotate-0 peer-checked:bg-gradient-to-tr peer-checked:from-green-100 peer-checked:via-lime-400 peer-checked:to-lime-500"></div>
+      </label>
 
-      <label className="font-semibold text-xs mt-3" htmlFor="slot">
+      <label className="font-semibold text-xl mt-3" htmlFor="slot">
         Parking Slot
       </label>
       <input
@@ -84,7 +100,6 @@ const MyComponent = ({ licenseNumberUrl }) => {
         value={slot}
         onChange={(e) => setSlot(e.target.value)}
       />
-
       <button className="flex items-center justify-center h-12 px-6 w-64 bg-blue-600 mt-8 rounded font-semibold text-sm text-blue-100 hover:bg-blue-700">
         Check in
       </button>
