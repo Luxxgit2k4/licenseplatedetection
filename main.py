@@ -87,10 +87,10 @@ def stopCapturing():
 
 # Function to capture frames from the webcam and push them into the queue
 def capture_frames():
-    customlog.info("Started capturing frames...")
     cap = cv2.VideoCapture(0)
     cap.set(3, 640)
     cap.set(4, 480)
+    customlog.info("Started capturing...")
 
     while capture_event.is_set():
         success, frame = cap.read()
@@ -108,22 +108,24 @@ def capture_frames():
 
 
 def gen_frames():
-    detectiontime = time.time()
-    timeout = 60
-
+    # detectiontime = time.time()
+    # timeout = 60
+    #
     startCapturing()
     while True:
         if not frame_queue.empty():
             frame = frame_queue.get()
-            if time.time() - detectiontime > timeout:
-                customlog.info("Stopping license plate detection due to inactivity...")
-                break
+            # if time.time() - detectiontime > timeout:
+            #     customlog.info("Stopping gen_frames due to inactivity...")
+            #     break
             # Encoding the frame as JPEG
             ret, buffer = cv2.imencode(".jpg", frame)
             frame = buffer.tobytes()
             yield (
                 b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n\r\n"
             )
+        else:
+            break
 
         time.sleep(0.15)
     stopCapturing()
@@ -328,8 +330,8 @@ def detectLicensePlate(image: np.ndarray):
 
 async def licenseplatebackgroundTask():
     customlog.info("Started capturing license plate...")
-    detectiontime = time.time()
-    timeout = 60
+    detectiontime = time.time() + 60
+    # timeout = 60
 
     startCapturing()
     while True:
@@ -355,8 +357,7 @@ async def licenseplatebackgroundTask():
                     customlog.info("retrying inserting to db")
                 break
 
-                break
-            elif time.time() - detectiontime > timeout:
+            elif time.time() == detectiontime:
                 customlog.info("Stopping license plate detection due to inactivity...")
                 break
 
@@ -370,7 +371,7 @@ async def licenseplatebackgroundTask():
 async def l_plate_handler(backgroundtasks: BackgroundTasks):
     """Endpoint to start webcam capture."""
     # backgroundtasks.add_task(licenseplatebackgroundTask, backgroundtasks)
-    customlog.info("Started to capture license plate...")
+    # customlog.info("Started to capture license plate...")
     # Wait for the background task to finish and get the result
     # Run the background task and get the result
     detectedtext, accuracy = await licenseplatebackgroundTask()
