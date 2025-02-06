@@ -190,8 +190,10 @@ def insert_into_database(plate, entered, accuracy):
         customlog.info(
             f"Inserted license plate {plate} into database with accuracy {accuracy}%."
         )
+        return True;
     else:
         customlog.error("Failed to insert data into database.")
+        return False;
 
 
 # Initialize the OCR reader for English
@@ -303,8 +305,15 @@ async def licenseplatebackgroundTask():
             if detectedtext:
                 detectiontime = time.time()
                 entered = True
-                insert_into_database(detectedtext, entered, accuracy)  # Assuming this function handles database insertions
-                customlog.info(f"Inserted license plate {detectedtext} into database with accuracy {accuracy:.2f}%.")
+                inserted = False
+                while not inserted:
+                    inserted = insert_into_database(detectedtext, entered, accuracy)  # Assuming this function handles database insertions
+                    if inserted:
+                        customlog.info(f"Inserted license plate {detectedtext} into database with accuracy {accuracy:.2f}%.")
+                        break
+                    customlog.info("retrying inserting to db")
+                break
+
                 break
             elif time.time() - detectiontime > timeout:
                 customlog.info("Stopping license plate detection due to inactivity...")
