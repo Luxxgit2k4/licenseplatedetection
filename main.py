@@ -32,6 +32,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 customlog.addHandler(handler)
 
+# Placeholder: Initialize duplicate plates set and license plate validation
 duplicateplates = set()
 
 # event to control the capture loop
