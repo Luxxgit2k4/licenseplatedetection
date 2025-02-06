@@ -53,8 +53,10 @@ def formatplate(plate: str) -> str:
     return cleaned
 
 def validateplate(plate: str) -> bool:
-    cleaned = plate.replace(" ", "")
-    return len(cleaned) == 8
+    # Indian license plate regex pattern:
+    # Format: [State Code][District Code][Number] (optionally followed by a letter or more numbers)
+    pattern = r'^[A-Z]{2}[0-9]{1,2}[A-Z]{0,2}[0-9]{1,4}$'
+    return bool(re.match(pattern, plate))
 
 def startCapturing():
     capture_event.set()
