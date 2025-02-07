@@ -54,19 +54,7 @@ const MyComponent = ({ licenseNumberUrl, userLicenseUrl }) => {
         // setLicenseNumber(data.number_plate); // Assuming this sets the license plate in state/UI
       })
       .catch((error) => console.error("Error fetching data:", error)); // Handle any errors
-
-    // fetchLicensePlate();
-    // Example: you could fetch data or take some action based on these values
   }, [licenseNumberUrl, userLicenseUrl]);
-
-  async function fetchLicensePlate() {
-    // GET request using fetch with async/await
-    const response = await fetch("https://api.npms.io/v2/search?q=react");
-    const data = await response.json();
-
-    console.log("data: ", data);
-    return data;
-  }
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
