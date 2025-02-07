@@ -1,18 +1,5 @@
 import { useState } from "react";
 
-// create user page.
-// have 3 inputs one for paid another for parking slot and other for number plate.
-// with all of this it should work.
-//
-// Backend user data model
-// # Pydantic models for input validation
-// class User(BaseModel):
-//     email: str
-//     password: str
-//     paid: str
-//     numberPlate: str
-//     booked_parking_slots: str
-//
 const MyComponent = ({ userUrl }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -35,8 +22,6 @@ const MyComponent = ({ userUrl }) => {
     // Example logging
     console.log("Email:", email);
     console.log("Password:", password);
-    localStorage.setItem("email", email);
-    localStorage.setItem("password", password);
     console.log("paid:", paid);
     console.log("number_plate:", number_plate);
     console.log("booked_parking_slots:", booked_parking_slots);
