@@ -23,7 +23,7 @@ const MyComponent = ({ registerUrl }) => {
     const data = {
       email: email,
       password: password,
-      booked_parking_slots: {},
+      booked_parking_slots: "",
     };
 
     // Send data to backend
