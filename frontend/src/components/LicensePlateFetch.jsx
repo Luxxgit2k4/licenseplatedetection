@@ -6,13 +6,12 @@ import React, { useEffect, useState } from "react";
 //   licenseNumber: string;
 // }
 
-const MyComponent = ({ licenseNumberUrl }) => {
+const MyComponent = ({ licenseNumberUrl, userLicenseUrl }) => {
   // Create state for licenseNumber, ownername, paid, slot
   const [licenseNumber, setLicenseNumber] = useState("");
   const [ownerName, setOwnerName] = useState("");
-  const [paid, setPaid] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const [slot, setSlot] = useState(false);
+  const [slot, setSlot] = useState("");
 
   useEffect(() => {
     // Log the values passed from Astro (licenseplate, videofeed, and licenseNumber)
@@ -27,18 +26,18 @@ const MyComponent = ({ licenseNumberUrl }) => {
       })
       .catch((error) => console.error("Error fetching data:", error));
 
-    fetch(licenseNumberUrl)
+    fetch(userLicenseUrl)
       .then((response) => response.json())
       .then((data) => {
-        console.log("fucking data:", data); // Log the entire response
-        console.log("fucking data correct:", data.license_plate); // Access license_plate correctly
-        setLicenseNumber(data.license_plate);
+        console.log("user data:", data); // Log the entire response
+        // console.log("user data correct:", data.license_plate); // Access license_plate correctly
+        // setLicenseNumber(data.license_plate);
       })
       .catch((error) => console.error("Error fetching data:", error));
 
     // fetchLicensePlate();
     // Example: you could fetch data or take some action based on these values
-  }, [licenseNumberUrl]);
+  }, [licenseNumberUrl, userLicenseUrl]);
 
   async function fetchLicensePlate() {
     // GET request using fetch with async/await
