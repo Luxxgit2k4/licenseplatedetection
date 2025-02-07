@@ -39,8 +39,12 @@ class User(BaseModel):
     email: str
     password: str
     paid: str
-    numberPlate: str
+    number_plate: str
     booked_parking_slots: str
+
+# Pydantic models for input validation
+class UserLicense(BaseModel):
+    number_plate: str
 
 # logger = logging.getLogger("uvicorn")
 # logger.setLevel(logging.DEBUG)
@@ -223,7 +227,8 @@ def getUserByLicense(number_plate):
         WHERE number_plate = %s;
         """
 
-        db.execute(query, (number_plate))
+        # please don't remove this punda comma it will throw a fucking error
+        db.execute(query, (number_plate,))
         result = db.fetchone()  # Get the first row of results, if any
 
         conn.commit()
@@ -541,17 +546,17 @@ async def register_user(user: User):
 @luffy.post("/user")
 async def updateusr(user: User):
     # Call the insert_user function with the data from the request
-    success = update_user(user.email, user.password, user.paid, user.numberPlate, user.booked_parking_slots)
+    success = update_user(user.email, user.password, user.paid, user.number_plate, user.booked_parking_slots)
 
     if success:
         return {"message": "User registered successfully!"}
     else:
         raise HTTPException(status_code=500, detail="Failed to insert user data into the database.")
 
-@luffy.post("/userlicense")
-async def usrlicense(user: str):
+@luffy.get("/userlicense")
+async def usrlicense(user: UserLicense):
     # Call the insert_user function with the data from the request
-    user_data = await asyncio.to_thread(getUserByLicense, user)
+    user_data = getUserByLicense(user.number_plate)
 
     if user_data:
         return {"status": "success", "user": user_data}
