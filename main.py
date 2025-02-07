@@ -103,31 +103,28 @@ def capture_frames():
             frame_queue.put(frame)
         else:
             customlog.warning("Frame queue is full, dropping frame.")
-        time.sleep(0.1)  # Add a small delay to avoid hogging CPU
+        time.sleep(0.05)  # Add a small delay to avoid hogging CPU
     cap.release()
 
 
-def gen_frames():
-    # detectiontime = time.time()
-    # timeout = 60
-    #
+async def gen_frames():
+    # 60 second timeout
+    detectiontime = time.time() + 60
+
     startCapturing()
     while True:
         if not frame_queue.empty():
             frame = frame_queue.get()
-            # if time.time() - detectiontime > timeout:
-            #     customlog.info("Stopping gen_frames due to inactivity...")
-            #     break
+            if time.time() == detectiontime:
+                customlog.info("Stopping gen_frames due to inactivity...")
+                break
             # Encoding the frame as JPEG
             ret, buffer = cv2.imencode(".jpg", frame)
             frame = buffer.tobytes()
             yield (
                 b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n\r\n"
             )
-        else:
-            break
-
-        time.sleep(0.15)
+        await asyncio.sleep(0.15)
     stopCapturing()
 
 
