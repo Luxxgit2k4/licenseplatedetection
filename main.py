@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import json
 import re
 import sys
 import threading
@@ -14,9 +15,10 @@ import numpy as np
 import psycopg2
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, FastAPI, Request
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import BackgroundTasks, FastAPI, Request, HTTPException
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, StreamingResponse
 
 load_dotenv()
 luffy = FastAPI()
@@ -32,6 +34,11 @@ luffy.add_middleware(
     allow_headers=["*"],
 )
 
+# Pydantic models for input validation
+class User(BaseModel):
+    email: str
+    password: str
+    booked_parking_slots: dict = {}
 
 # logger = logging.getLogger("uvicorn")
 # logger.setLevel(logging.DEBUG)
@@ -169,6 +176,17 @@ def dbConnector():
         """
         )
         customlog.info("Table 'plates' is ready.")
+        # Create users table with email, password, and booked parking slots (as JSON)
+        cursor.execute(
+            """
+        CREATE TABLE IF NOT EXISTS users (
+            email VARCHAR PRIMARY KEY,
+            password VARCHAR NOT NULL,
+            booked_parking_slots JSONB
+        );
+        """
+        )
+        customlog.info("Table 'users' is ready.")
         cursor.close()
         return conn
     except Exception as e:
@@ -190,6 +208,34 @@ def cleardata():
         finally:
             conn.close()
 
+def insert_user(email, password, booked_parking_slots=None):
+    conn = dbConnector()
+    if conn:
+        db = conn.cursor()
+        # Hash the password before inserting it into the database (for security reasons)
+        # hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+        # If no booked parking slots are provided, set it to an empty JSON object
+        if booked_parking_slots is None:
+            booked_parking_slots = {}
+
+        query = """
+        INSERT INTO users (email, password, booked_parking_slots)
+        VALUES (%s, %s, %s)
+        ON CONFLICT (email)
+        DO UPDATE SET password = EXCLUDED.password, booked_parking_slots = EXCLUDED.booked_parking_slots;
+        """
+
+        db.execute(query, (email, password, json.dumps(booked_parking_slots)))
+        conn.commit()
+        db.close()
+        conn.close()
+
+        customlog.info(f"Inserted/Updated user with email {email}.")
+        return True
+    else:
+        customlog.error("Failed to insert user data into database.")
+        return False
 
 def insert_into_database(plate, entered, accuracy):
     conn = dbConnector()
@@ -428,6 +474,17 @@ async def dbHandler():
 @luffy.get("/servererror")
 async def servererror():
     raise Exception("Server error for testing logging")
+
+# FastAPI route to handle user insertion
+@luffy.post("/register")
+async def register_user(user: User):
+    # Call the insert_user function with the data from the request
+    success = insert_user(user.email, user.password, user.booked_parking_slots)
+
+    if success:
+        return {"message": "User registered successfully!"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to insert user data into the database.")
 
 
 # log_config = uvicorn.config.LOGGING_CONFIG
