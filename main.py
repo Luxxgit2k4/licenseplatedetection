@@ -237,7 +237,13 @@ def getUserByLicense(number_plate):
 
         if result:
             customlog.info(f"Retrieved user with number plate {number_plate}.")
-            return result  # Return the user details as a tuple
+            # Return as a JSON object (dictionary)
+            return {
+                "email": result[0],  # email
+                "paid": str(result[1]),  # paid (convert to string to match "true"/"false")
+                "number_plate": result[2],  # number_plate
+                "booked_parking_slots": result[3]  # booked_parking_slots
+            }
         else:
             customlog.warning(f"No user found with number plate {number_plate}.")
             return None
