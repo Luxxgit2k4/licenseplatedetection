@@ -1,6 +1,19 @@
 import { useState } from "react";
 
-const MyComponent = ({ registerUrl }) => {
+// create user page.
+// have 3 inputs one for paid another for parking slot and other for number plate.
+// with all of this it should work.
+//
+// Backend user data model
+// # Pydantic models for input validation
+// class User(BaseModel):
+//     email: str
+//     password: str
+//     paid: str
+//     numberPlate: str
+//     booked_parking_slots: str
+//
+const MyComponent = ({ userUrl }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -28,7 +41,7 @@ const MyComponent = ({ registerUrl }) => {
 
     // Send data to backend
     try {
-      const response = await fetch(registerUrl, {
+      const response = await fetch(userUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
