@@ -549,11 +549,11 @@ async def updateusr(user: User):
     success = update_user(user.email, user.password, user.paid, user.number_plate, user.booked_parking_slots)
 
     if success:
-        return {"message": "User registered successfully!"}
+        return {"message": "User updated successfully with number_plate!"}
     else:
         raise HTTPException(status_code=500, detail="Failed to insert user data into the database.")
 
-@luffy.get("/userlicense")
+@luffy.post("/userlicense")
 async def usrlicense(user: UserLicense):
     # Call the insert_user function with the data from the request
     user_data = getUserByLicense(user.number_plate)
