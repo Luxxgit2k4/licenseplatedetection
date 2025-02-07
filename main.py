@@ -212,6 +212,34 @@ def cleardata():
         finally:
             conn.close()
 
+def getUserByLicense(number_plate):
+    conn = dbConnector()
+    if conn:
+        db = conn.cursor()
+
+        query = """
+        SELECT email, paid, number_plate, booked_parking_slots
+        FROM users
+        WHERE number_plate = %s;
+        """
+
+        db.execute(query, (number_plate))
+        result = db.fetchone()  # Get the first row of results, if any
+
+        conn.commit()
+        db.close()
+        conn.close()
+
+        if result:
+            customlog.info(f"Retrieved user with number plate {number_plate}.")
+            return result  # Return the user details as a tuple
+        else:
+            customlog.warning(f"No user found with number plate {number_plate}.")
+            return None
+    else:
+        customlog.error("Failed to retrieve user data from database.")
+        return None
+
 def update_user(email, password,  paid, number_plate, booked_parking_slots,):
     conn = dbConnector()
     if conn:
@@ -520,6 +548,15 @@ async def updateusr(user: User):
     else:
         raise HTTPException(status_code=500, detail="Failed to insert user data into the database.")
 
+@luffy.post("/userlicense")
+async def usrlicense(user: str):
+    # Call the insert_user function with the data from the request
+    user_data = await asyncio.to_thread(getUserByLicense, user)
+
+    if user_data:
+        return {"status": "success", "user": user_data}
+    else:
+        return {"status": "fail", "user": "Nil"}
 
 # log_config = uvicorn.config.LOGGING_CONFIG
 # log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s - %(remote_addr)s - %(request_method)s - %(path)s - %(status_code)s"
