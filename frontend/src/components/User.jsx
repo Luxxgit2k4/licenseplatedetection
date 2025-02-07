@@ -17,7 +17,7 @@ const MyComponent = ({ userUrl }) => {
 
     const paid = String(formData.get("paid")); // Convert to string explicitly
     const number_plate = String(formData.get("number_plate")); // Convert to string explicitly
-    const booked_parking_slots = String(formData.get("booked")); // Convert to string explicitly
+    const booked_parking_slots = String(formData.get("booked_parking_slots")); // Convert to string explicitly
 
     // Example logging
     console.log("Email:", email);
