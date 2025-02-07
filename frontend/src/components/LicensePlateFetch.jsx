@@ -18,7 +18,7 @@ const MyComponent = ({ licenseNumberUrl, userLicenseUrl }) => {
     console.log("License Number URL:", licenseNumberUrl);
 
     fetch(licenseNumberUrl)
-      .then((response) => response.json())
+      .then((response) => response.json()) // Parse the response
       .then((data) => {
         console.log("fucking data:", data); // Log the entire response
         console.log("fucking data correct:", data.license_plate); // Access license_plate correctly
