@@ -4,9 +4,12 @@ import LicneplateForm from "./LicensePlateFetch.jsx";
 const licenseplate = import.meta.env.LICENSEPLATE;
 const videofeed = licenseplate.concat("/", "video_feed");
 const licenseNumber = licenseplate.concat("/", "licenseplate");
+// to-do: add this to the backend
+const userLicenseUrl = licenseplate.concat("/", "userlicense");
 
 // no need for websocket connection just create a api request and get the values
 // if you find the license plate in the registered users list get the username and the list.
+
 ---
 
 <div class="container mx-auto border-2 rounded-2xl text-center p-4 my-8">
@@ -19,7 +22,6 @@ const licenseNumber = licenseplate.concat("/", "licenseplate");
     <!-- form gose below -->
     <div class="text-left">
       <h1 class="font-bold text-2xl text-center">Vehicle Details 🚗..</h1>
-
       <LicneplateForm client:only licenseNumberUrl={licenseNumber} />
     </div>
   </div>
