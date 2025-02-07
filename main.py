@@ -38,7 +38,9 @@ luffy.add_middleware(
 class User(BaseModel):
     email: str
     password: str
-    booked_parking_slots: dict = {}
+    paid: str
+    numberPlate: str
+    booked_parking_slots: str
 
 # logger = logging.getLogger("uvicorn")
 # logger.setLevel(logging.DEBUG)
@@ -182,7 +184,9 @@ def dbConnector():
         CREATE TABLE IF NOT EXISTS users (
             email VARCHAR PRIMARY KEY,
             password VARCHAR NOT NULL,
-            booked_parking_slots JSONB
+            paid VARCHAR NOT NULL,
+            number_plate VARCHAR NOT NULL,
+            booked_parking_slots VARCHAR NOT NULL
         );
         """
         )
@@ -208,16 +212,35 @@ def cleardata():
         finally:
             conn.close()
 
-def insert_user(email, password, booked_parking_slots=None):
+def update_user(email, password,  paid, number_plate, booked_parking_slots,):
+    conn = dbConnector()
+    if conn:
+        db = conn.cursor()
+
+        query = """
+        INSERT INTO users (email, password, paid, number_plate, booked_parking_slots)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT (email)
+        DO UPDATE SET paid = EXCLUDED.paid, number_plate = EXCLUDED.number_plate, booked_parking_slots = EXCLUDED.booked_parking_slots;
+        """
+
+        db.execute(query, (email, password, paid, number_plate, booked_parking_slots))
+        conn.commit()
+        db.close()
+        conn.close()
+
+        customlog.info(f"Inserted/Updated user with email {email}.")
+        return True
+    else:
+        customlog.error("Failed to insert user data into database.")
+        return False
+
+def insert_user(email, password, booked_parking_slots):
     conn = dbConnector()
     if conn:
         db = conn.cursor()
         # Hash the password before inserting it into the database (for security reasons)
         # hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-        # If no booked parking slots are provided, set it to an empty JSON object
-        if booked_parking_slots is None:
-            booked_parking_slots = {}
 
         query = """
         INSERT INTO users (email, password, booked_parking_slots)
@@ -226,7 +249,7 @@ def insert_user(email, password, booked_parking_slots=None):
         DO UPDATE SET password = EXCLUDED.password, booked_parking_slots = EXCLUDED.booked_parking_slots;
         """
 
-        db.execute(query, (email, password, json.dumps(booked_parking_slots)))
+        db.execute(query, (email, password, booked_parking_slots))
         conn.commit()
         db.close()
         conn.close()
@@ -480,6 +503,17 @@ async def servererror():
 async def register_user(user: User):
     # Call the insert_user function with the data from the request
     success = insert_user(user.email, user.password, user.booked_parking_slots)
+
+    if success:
+        return {"message": "User registered successfully!"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to insert user data into the database.")
+
+# FastAPI route to handle user insertion
+@luffy.post("/user")
+async def updateusr(user: User):
+    # Call the insert_user function with the data from the request
+    success = update_user(user.email, user.password, user.paid, user.numberPlate, user.booked_parking_slots)
 
     if success:
         return {"message": "User registered successfully!"}
