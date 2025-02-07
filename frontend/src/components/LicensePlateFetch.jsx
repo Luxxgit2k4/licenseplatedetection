@@ -59,32 +59,6 @@ const MyComponent = ({ licenseNumberUrl, userLicenseUrl }) => {
     // Example: you could fetch data or take some action based on these values
   }, [licenseNumberUrl, userLicenseUrl]);
 
-  // useEffect(() => {
-  //   // Log the values passed from Astro (licenseplate, videofeed, and licenseNumber)
-  //   console.log("userlicense URL:", userLicenseUrl);
-  //
-  //   fetch(userLicenseUrl, {
-  //     method: "GET", // Use POST method
-  //     headers: {
-  //       "Content-Type": "application/json", // Tell the server we're sending JSON
-  //     },
-  //     body: JSON.stringify({
-  //       number_plate: licenseNumber, // Your number plate data
-  //     }),
-  //   })
-  //     .then((response) => response.json()) // Parse JSON response
-  //     .then((data) => {
-  //       console.log("User data:", data); // Log the entire response
-  //       // If you want to access specific data:
-  //       // console.log("User license plate:", data.number_plate);
-  //       // setLicenseNumber(data.number_plate); // Assuming this sets the license plate in state or UI
-  //     })
-  //     .catch((error) => console.error("Error fetching data:", error));
-  //
-  //   // fetchLicensePlate();
-  //   // Example: you could fetch data or take some action based on these values
-  // }, [licenseNumber]);
-  //
   async function fetchLicensePlate() {
     // GET request using fetch with async/await
     const response = await fetch("https://api.npms.io/v2/search?q=react");
