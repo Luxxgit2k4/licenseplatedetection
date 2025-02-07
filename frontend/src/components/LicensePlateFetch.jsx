@@ -25,8 +25,6 @@ const MyComponent = ({ licenseNumberUrl, userLicenseUrl }) => {
 
         // const licenseNumber = data.license_plate; // Get license_plate from the first response
         setLicenseNumber(data.license_plate);
-      })
-      .catch((error) => console.error("Error fetching data:", error));
 
         // Use this licenseNumber in the second fetch call
         return fetch(userLicenseUrl, {
