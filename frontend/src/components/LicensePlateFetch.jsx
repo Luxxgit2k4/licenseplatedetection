@@ -22,6 +22,8 @@ const MyComponent = ({ licenseNumberUrl, userLicenseUrl }) => {
       .then((data) => {
         console.log("fucking data:", data); // Log the entire response
         console.log("fucking data correct:", data.license_plate); // Access license_plate correctly
+
+        // const licenseNumber = data.license_plate; // Get license_plate from the first response
         setLicenseNumber(data.license_plate);
       })
       .catch((error) => console.error("Error fetching data:", error));
