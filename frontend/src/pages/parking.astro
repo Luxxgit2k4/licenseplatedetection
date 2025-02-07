@@ -2,20 +2,8 @@
 import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
 
-const parkingslots = [
-  { id: "A01", status: false },
-  { id: "A02", status: false },
-  { id: "A03", status: false },
-  { id: "A04", status: false },
-  { id: "A05", status: false },
-  { id: "A06", status: true },
-  { id: "B01", status: true },
-  { id: "B02", status: false },
-  { id: "B03", status: false },
-  { id: "B04", status: true },
-  { id: "B05", status: false },
-  { id: "B06", status: false },
-];
+const response = await fetch("http://127.0.0.1:8004/parkingData");
+const Parkingslots = await response.json();
  ---
 <Layout>
   <div class="flex flex-col items-center bg-gray-900 text-white min-h-screen p-4">
@@ -31,14 +19,14 @@ const parkingslots = [
 
    <!-- First column for A slots -->
       <div class="flex flex-col gap-6 justify-self-start">
-             {parkingslots.slice(0, 6).map((slot) => (
+{Parkingslots.slots.filter(slot => slot.slot_id.startsWith("A")).map((slot) => (
           <div
             class={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
-              slot.status ? "bg-gray-700 cursor-not-allowed" : "bg-gray-800 hover:bg-gray-700"
+              slot.slot_status ? "bg-gray-700 cursor-not-allowed" : "bg-gray-800 hover:bg-gray-700"
             }`}
           >
-            {slot.status ? <img src="/car.jpg" alt="Car" class="w-10 h-10 object-cover" /> : null}
-            <span class="mt-2 text-sm">{slot.id}</span>
+            {slot.slot_status ? <img src="/car.jpg" alt="Car" class="w-10 h-10 object-cover" /> : null}
+            <span class="mt-2 text-sm">{slot.slot_id}</span>
           </div>
           ))}
       </div>
@@ -50,14 +38,14 @@ const parkingslots = [
 
     <!-- Third column for B slots -->
     <div class= "flex flex-col gap-6 justify-self-end">
-       {parkingslots.slice(6, 12).map((slot) => (
+{Parkingslots.slots.filter(slot => slot.slot_id.startsWith("B")).map((slot) => (
           <div
             class={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
-              slot.status ? "bg-gray-700 cursor-not-allowed" : "bg-gray-800 hover:bg-gray-700"
+              slot.slot_status ? "bg-gray-700 cursor-not-allowed" : "bg-gray-800 hover:bg-gray-700"
             }`}
           >
-            {slot.status ? <img src="/car.jpg" alt="Car" class="w-10 h-10" /> : null}
-            <span class="mt-2 text-sm">{slot.id}</span>
+            {slot.slot_status ? <img src="/car.jpg" alt="Car" class="w-10 h-10" /> : null}
+            <span class="mt-2 text-sm">{slot.slot_id}</span>
           </div>
           ))}
     </div>
