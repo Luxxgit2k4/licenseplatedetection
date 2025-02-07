@@ -4,32 +4,6 @@ import Loginjs from "../components/Login.jsx";
 
 const licenseplate = import.meta.env.LICENSEPLATE;
 const registerUrl = licenseplate.concat("/", "register");
-
-// handle the form
-if (Astro.request.method === "POST") {
-  try {
-    const data = await Astro.request.formData();
-    const email = String(data.get("email"));
-    const password = String(data.get("password"));
-    // Do something with the data
-    // await registerUser({ name, email, password });
-    const response = await fetch(registerUrl, {
-      // assuming FastAPI is running at '/api/register'
-      method: "POST",
-      body: data,
-    });
-
-    if (response.ok) {
-      return Astro.redirect("/");
-    } else {
-      console.error("Failed to register user.");
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.message);
-    }
-  }
-}
 ---
 
 <!-- source: https://tailwindflex.com/@orionc/sign-in-page-with-googlefacebooktwitter-buttons -->
