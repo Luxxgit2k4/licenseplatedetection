@@ -49,9 +49,6 @@ const MyComponent = ({ licenseNumberUrl, userLicenseUrl }) => {
 
         setSlot(data.user.booked_parking_slots)
 
-        // Assuming you want to access specific data from the second response
-        // For example:
-        // setLicenseNumber(data.number_plate); // Assuming this sets the license plate in state/UI
       })
       .catch((error) => console.error("Error fetching data:", error)); // Handle any errors
   }, [licenseNumberUrl, userLicenseUrl]);
