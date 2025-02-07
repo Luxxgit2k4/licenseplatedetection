@@ -28,14 +28,34 @@ const MyComponent = ({ licenseNumberUrl, userLicenseUrl }) => {
       })
       .catch((error) => console.error("Error fetching data:", error));
 
-    fetch(userLicenseUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("user data:", data); // Log the entire response
-        // console.log("user data correct:", data.license_plate); // Access license_plate correctly
-        // setLicenseNumber(data.license_plate);
+        // Use this licenseNumber in the second fetch call
+        return fetch(userLicenseUrl, {
+          method: "POST", // Assuming you want a GET request here
+          headers: {
+            "Content-Type": "application/json", // Tell the server we're sending JSON
+          },
+          body: JSON.stringify({
+            number_plate: data.license_plate, // Use the license_plate here
+          }),
+        });
       })
-      .catch((error) => console.error("Error fetching data:", error));
+      .then((response) => response.json()) // Parse the second response
+      .then((data) => {
+        console.log("User data:", data); // Log the entire user data
+
+        setOwnerName(data.user.email);
+
+        if (data.user.paid == "paid") {
+          setIsChecked(true);
+        }
+
+        setSlot(data.user.booked_parking_slots)
+
+        // Assuming you want to access specific data from the second response
+        // For example:
+        // setLicenseNumber(data.number_plate); // Assuming this sets the license plate in state/UI
+      })
+      .catch((error) => console.error("Error fetching data:", error)); // Handle any errors
 
     // fetchLicensePlate();
     // Example: you could fetch data or take some action based on these values
