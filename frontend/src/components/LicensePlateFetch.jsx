@@ -27,6 +27,15 @@ const MyComponent = ({ licenseNumberUrl }) => {
       })
       .catch((error) => console.error("Error fetching data:", error));
 
+    fetch(licenseNumberUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("fucking data:", data); // Log the entire response
+        console.log("fucking data correct:", data.license_plate); // Access license_plate correctly
+        setLicenseNumber(data.license_plate);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+
     // fetchLicensePlate();
     // Example: you could fetch data or take some action based on these values
   }, [licenseNumberUrl]);
