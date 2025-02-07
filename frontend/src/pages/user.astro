@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Userjsx from "../components/User.jsx";
+
+const licenseplate = import.meta.env.LICENSEPLATE;
+const userUrl = licenseplate.concat("/", "user");
+---
+
+<!-- source: https://tailwindflex.com/@orionc/sign-in-page-with-googlefacebooktwitter-buttons -->
+<Layout>
+  <Userjsx client:only userUrl={userUrl} />
+</Layout>
