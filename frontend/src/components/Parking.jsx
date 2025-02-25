@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Loading from 'react-simple-loading'
 
 const Parking = () => {
   const [parkingslots, setparkingslots] = useState([]);
@@ -40,7 +41,7 @@ const Parking = () => {
     </button>
     </div>
 {loading ? (
-        console.log("Fetching the parking data..")
+        <div> <Loading /> </div>
       ) : (
         <div className="grid grid-cols-3 gap-6 w-full max-w-6xl">
           {/* Column A Slots */}
