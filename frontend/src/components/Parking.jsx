@@ -141,11 +141,12 @@ const Parking = () => {
         <Popup open={ispopup} onClose={() => setpopup(false)} position="right center"         >
         <div className="p-4 bg-gray-700 text-white">
           <h2 className="text-lg font-bold mb-2">Slot Selected</h2>
-          <p className="text-sm">You have selected slot <strong>{selectslot}</strong></p>
+          <h2 className="text-sm">You have selected slot <strong>{selectslot}</strong></h2>
 <div className="flex justify-between mt-4 gap-3">
           <button
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
-            onClick={() => setpopup(false)}
+            onClick={() =>{ setpopup(false);
+            setselectslot(null);} }
           >
             Close
           </button>
