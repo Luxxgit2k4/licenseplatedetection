@@ -33,6 +33,7 @@ const Parking = () => {
   const slotselection = (slot_no) => {
     setselectslot(slot_no);
     alert(`Selected slot ${slot_no}`);
+    console.log(`Selected slot ${slot_no}`)
   };
 
   return (
