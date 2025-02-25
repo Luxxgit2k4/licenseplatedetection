@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
-import Loading from 'react-simple-loading'
+import Loading from 'react-simple-loading' // Package for the loading animation
 
 const Parking = () => {
+// initially the slots are empty and using useState we are updating by fetching it from the database
+
   const [parkingslots, setparkingslots] = useState([]);
+  // this usestate will show the loading animation while fetching the slots data
   const [loading, setLoading] = useState(true);
 
+  // useeffect for fetching the data and updating the DOM based on the slots available
   useEffect(() => {
     const fetchslots = async () => {
       try {
         const response = await fetch("http://127.0.0.1:8004/parkingData")
         const data = await response.json();
         setparkingslots(data.slots);
-        setLoading(false);
+        setLoading(false); // the loading animation will stop when the data has been fetched
+        console.log("Fetched parking slots successfully...")
       } catch (error) {
         console.error("Fetching parking slots failed:", error);
         setLoading(false);
@@ -19,6 +24,8 @@ const Parking = () => {
       };
 
     fetchslots();
+    const interval = setInterval(fetchslots,5000); // For real time update of the available slots
+    return () => clearInterval(interval)
     }, []);
 
   return (
@@ -41,10 +48,10 @@ const Parking = () => {
     </button>
     </div>
 {loading ? (
-        <div> <Loading /> </div>
+        <div> <Loading /> </div> // this is the loading animation which runs from that package
       ) : (
         <div className="grid grid-cols-3 gap-6 w-full max-w-6xl">
-          {/* Column A Slots */}
+          // Column A slots
           <div className="flex flex-col gap-6 justify-self-start">
             {parkingslots
               .filter((slot) => slot.slot_id.startsWith("A"))
@@ -57,6 +64,7 @@ const Parking = () => {
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
                 >
+ // shows the car image if the status is true otherwise nothing
                  {slot.slot_status ? (
                     <img
                       src="/car.jpg"
@@ -69,12 +77,12 @@ const Parking = () => {
               ))}
           </div>
 
-          {/* Middle Dashed Line */}
+          // The road like line using border
           <div className="flex justify-center items-center">
             <div className="h-full border-2 border-dashed"></div>
           </div>
 
-          {/* Column B Slots */}
+          // Column B slots
           <div className="flex flex-col gap-6 justify-self-end">
             {parkingslots
               .filter((slot) => slot.slot_id.startsWith("B"))
@@ -87,6 +95,7 @@ const Parking = () => {
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
                 >
+// shows the car image if the status is true otherwise nothing
                   {slot.slot_status ? (
                     <img src="/car.jpg" alt="Car" className="w-10 h-10" />
                   ) : null}
@@ -96,6 +105,12 @@ const Parking = () => {
           </div>
         </div>
       )}
+// Button for booking the parking slot stil yet to add functionality
+      <footer>
+<button class="mt-6 px-32 py-4 bg-sky-500 text-black rounded-md text-sm font-medium hover:bg-yellow-400">
+      Book
+</button>
+  </footer>
     </div>
   );
 };
