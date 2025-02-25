@@ -26,7 +26,7 @@ const Parking = () => {
       };
 
     fetchslots();
-    const interval = setInterval(fetchslots,5000); // For real time update of the available slots
+    const interval = setInterval(fetchslots,6000); // For real time update of the available slots
     return () => clearInterval(interval)
     }, []);
 
