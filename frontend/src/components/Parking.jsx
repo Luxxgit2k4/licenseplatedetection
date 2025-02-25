@@ -7,6 +7,8 @@ const Parking = () => {
   const [parkingslots, setparkingslots] = useState([]);
   // this usestate will show the loading animation while fetching the slots data
   const [loading, setLoading] = useState(true);
+  // this usestate is for selecting the empty slots
+  const [selectslot, setselectslot] = useState(null);
 
   // useeffect for fetching the data and updating the DOM based on the slots available
   useEffect(() => {
@@ -28,8 +30,15 @@ const Parking = () => {
     return () => clearInterval(interval)
     }, []);
 
+  const slotselection = (slot_no) => {
+    setselectslot(slot_no);
+    alert(`Selected slot ${slot_no}`);
+  };
+
   return (
+
     <div className="flex flex-col items-center bg-gray-900 text-white min-h-screen p-4">
+   {/* These are the headers with fucking floor buttons */}
     <h1 className="text-xl font-bold mb-4">Parking Slot</h1>
     <div className="flex gap-4 mb-8">
     <button className="px-3 py-2 bg-yellow-500 text-black rounded-md text-sm font-medium"> G Floor
@@ -47,24 +56,28 @@ const Parking = () => {
     3rd Floor
     </button>
     </div>
+    {/* this is the loading animation which runs from that package, we can set the colour if you want refer this link https://www.npmjs.com/package/react-simple-loading */}
 {loading ? (
-        <div> <Loading /> </div> // this is the loading animation which runs from that package
+        <div> <Loading /> </div>
       ) : (
+
         <div className="grid grid-cols-3 gap-6 w-full max-w-6xl">
-          // Column A slots
+  {/* Grid with three columns for Slot A and the roadlike border then at last Slot B */}
+  {/* The following one is A slot mapping  */}
           <div className="flex flex-col gap-6 justify-self-start">
             {parkingslots
               .filter((slot) => slot.slot_id.startsWith("A"))
               .map((slot) => (
                 <div
                   key={slot.slot_id}
+
+                onClick={() => !slot.slot_status && slotselection(slot.slot_id)}
                   className={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
                     slot.slot_status
                       ? "bg-gray-700 cursor-not-allowed"
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
                 >
- // shows the car image if the status is true otherwise nothing
                  {slot.slot_status ? (
                     <img
                       src="/car.jpg"
@@ -77,25 +90,28 @@ const Parking = () => {
               ))}
           </div>
 
-          // The road like line using border
+
+  {/* The following one is the road like border */}
           <div className="flex justify-center items-center">
             <div className="h-full border-2 border-dashed"></div>
           </div>
 
-          // Column B slots
+
+  {/* The following one is B slot mapping  */}
           <div className="flex flex-col gap-6 justify-self-end">
             {parkingslots
               .filter((slot) => slot.slot_id.startsWith("B"))
               .map((slot) => (
                 <div
                   key={slot.slot_id}
+
+                onClick={() => !slot.slot_status && slotselection(slot.slot_id)}
                   className={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
                     slot.slot_status
                       ? "bg-gray-700 cursor-not-allowed"
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
                 >
-// shows the car image if the status is true otherwise nothing
                   {slot.slot_status ? (
                     <img src="/car.jpg" alt="Car" className="w-10 h-10" />
                   ) : null}
@@ -105,8 +121,8 @@ const Parking = () => {
           </div>
         </div>
       )}
-// Button for booking the parking slot stil yet to add functionality
-      <footer>
+
+  <footer>
 <button class="mt-6 px-32 py-4 bg-sky-500 text-black rounded-md text-sm font-medium hover:bg-yellow-400">
       Book
 </button>
