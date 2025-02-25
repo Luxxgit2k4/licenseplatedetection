@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import Loading from 'react-simple-loading' // Package for the loading animation
+import Loading from 'react-simple-loading'// Package for the loading animation
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
 const Parking = () => {
 // initially the slots are empty and using useState we are updating by fetching it from the database
@@ -32,7 +34,6 @@ const Parking = () => {
 
   const slotselection = (slot_no) => {
     setselectslot(slot_no);
-    alert(`Selected slot ${slot_no}`);
     console.log(`Selected slot ${slot_no}`)
   };
 
@@ -72,12 +73,17 @@ const Parking = () => {
                 <div
                   key={slot.slot_id}
 
-                onClick={() => !slot.slot_status && slotselection(slot.slot_id)}
-                  className={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
+                               className={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
                     slot.slot_status
                       ? "bg-gray-700 cursor-not-allowed"
+                      : slot.slot_id === selectslot
+                      ? "bg-blue-300"
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
+ onClick={() =>
+                  !slot.slot_status && slotselection(slot.slot_id)}
+
+
                 >
                  {slot.slot_status ? (
                     <img
@@ -106,12 +112,16 @@ const Parking = () => {
                 <div
                   key={slot.slot_id}
 
-                onClick={() => !slot.slot_status && slotselection(slot.slot_id)}
                   className={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
                     slot.slot_status
                       ? "bg-gray-700 cursor-not-allowed"
+                      : slot.slot_id === selectslot
+                      ? "bg-blue-300"
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
+
+
+                onClick={() => !slot.slot_status && slotselection(slot.slot_id)}
                 >
                   {slot.slot_status ? (
                     <img src="/car.jpg" alt="Car" className="w-10 h-10" />
