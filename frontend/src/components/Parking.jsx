@@ -11,6 +11,8 @@ const Parking = () => {
   const [loading, setLoading] = useState(true);
   // this usestate is for selecting the empty slots
   const [selectslot, setselectslot] = useState(null);
+  // this usestate is for the Popup menu after selecting a slot
+  const [ispopup, setpopup] = useState(false);
 
   // useeffect for fetching the data and updating the DOM based on the slots available
   useEffect(() => {
@@ -34,6 +36,7 @@ const Parking = () => {
 
   const slotselection = (slot_no) => {
     setselectslot(slot_no);
+    setpopup(true);
     console.log(`Selected slot ${slot_no}`)
   };
 
@@ -80,10 +83,10 @@ const Parking = () => {
                       ? "bg-blue-300"
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
- onClick={() =>
-                  !slot.slot_status && slotselection(slot.slot_id)}
-
-
+ onClick={() =>{
+                 if (!slot.slot_status)
+   slotselection(slot.slot_id)}
+}
                 >
                  {slot.slot_status ? (
                     <img
@@ -120,8 +123,10 @@ const Parking = () => {
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
 
-
-                onClick={() => !slot.slot_status && slotselection(slot.slot_id)}
+               onClick={() =>{
+                 if (!slot.slot_status)
+   slotselection(slot.slot_id)}
+}
                 >
                   {slot.slot_status ? (
                     <img src="/car.jpg" alt="Car" className="w-10 h-10" />
@@ -130,8 +135,33 @@ const Parking = () => {
                 </div>
               ))}
           </div>
+
+   {/* Using react popup component for popup while selecting a empty slot refer this line https://react-popup.elazizi.com/getting-started/ */}
+
+        <Popup open={ispopup} onClose={() => setpopup(false)} position="right center"         >
+        <div className="p-4 bg-gray-700 text-white">
+          <h2 className="text-lg font-bold mb-2">Slot Selected</h2>
+          <p className="text-sm">You have selected slot <strong>{selectslot}</strong></p>
+<div className="flex justify-between mt-4 gap-3">
+          <button
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
+            onClick={() => setpopup(false)}
+          >
+            Close
+          </button>
+
+          <button
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
+          >
+            Book
+          </button>
+        </div>
+</div>
+      </Popup>
+
         </div>
       )}
+
 
   <footer>
 <button class="mt-6 px-32 py-4 bg-sky-500 text-black rounded-md text-sm font-medium hover:bg-yellow-400">
