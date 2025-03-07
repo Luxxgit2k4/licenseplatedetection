@@ -40,6 +40,24 @@ const Parking = () => {
     console.log(`Selected slot ${slot_no}`)
   };
 
+    const payment = async () => {
+try {
+    const amount = 50 * 100;
+    const currency = "INR";
+    const receipt = `receipt_${Date.now()}`;
+
+    const response = await fetch("http://localhost:8007/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount, currency, receipt }),
+    });
+          const order = await response.json();
+          console.log(order);
+        } catch (error) {
+          console.error("Error creating an order...", error);
+        }
+      }
+
   return (
 
     <div className="flex flex-col items-center bg-gray-900 text-white min-h-screen p-4">
@@ -153,6 +171,7 @@ const Parking = () => {
 
           <button
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
+            onClick={payment}
           >
             Book
           </button>
