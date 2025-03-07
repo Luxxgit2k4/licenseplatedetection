@@ -13,6 +13,10 @@ const Parking = () => {
   const [selectslot, setselectslot] = useState(null);
   // this usestate is for the Popup menu after selecting a slot
   const [ispopup, setpopup] = useState(false);
+  // this usestate is for increasing the hours
+  const [hours, setHours] = useState(1);
+
+  const rate = 50;
 
   // useeffect for fetching the data and updating the DOM based on the slots available
   useEffect(() => {
@@ -37,12 +41,17 @@ const Parking = () => {
   const slotselection = (slot_no) => {
     setselectslot(slot_no);
     setpopup(true);
+    setHours(1);
     console.log(`Selected slot ${slot_no}`)
   };
 
+  const increasehours = () => setHours((prev) => Math.min(prev + 1, 24));
+
+  const decreasehours = () => setHours((prev) => Math.max(prev - 1, 1));
+
     const payment = async () => {
 try {
-    const amount = 50 * 100;
+    const amount = rate * hours * 100;
     const currency = "INR";
     const receipt = `receipt_${Date.now()}`;
 
@@ -157,9 +166,19 @@ try {
    {/* Using react popup component for popup while selecting a empty slot refer this line https://react-popup.elazizi.com/getting-started/ */}
 
         <Popup open={ispopup} onClose={() => setpopup(false)} position="right center"         >
-        <div className="p-4 bg-gray-700 text-white">
+        <div className="p-4 bg-gray-700 text-white text-center">
           <h2 className="text-lg font-bold mb-2">Slot Selected</h2>
           <h2 className="text-sm">You have selected slot <strong>{selectslot}</strong></h2>
+ <p className="text-sm mt-2">Parking charge ₹50 per hour</p>
+
+   <div className="flex items-center justify-center gap-4 mt-2">
+            <button className="bg-gray-600 px-3 py-2 rounded" onClick={decreasehours}>-</button>
+            <span className="text-lg font-bold">{hours} hr</span>
+            <button className="bg-gray-600 px-3 py-2 rounded" onClick={increasehours}>+</button>
+          </div>
+
+          <h2 className="text-xl font-bold mt-2">₹{rate * hours}</h2>
+
 <div className="flex justify-between mt-4 gap-3">
           <button
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
