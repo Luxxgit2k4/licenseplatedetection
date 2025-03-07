@@ -10,21 +10,18 @@ configDotenv() // To load razorpay api key from the .env
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false}));
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_SECRET,
 });
 
-app.post("/create-order", async (req, res) => {
-  const { amount } = req.body;
+app.post("/order", async (req, res) => {
   try {
-    const order = await razorpay.orders.create({
-      amount: amount,
-      currency: "INR",
-      payment_capture: 1,
-    });
-    res.json({ orderId: order.id });
+  const options = req.body;
+    const order = await razorpay.orders.create(options);
+    res.json(order);
   } catch (error) {
     console.error("Error creating order:", error);
     res.status(500).json({ error: "Failed to create order"});
