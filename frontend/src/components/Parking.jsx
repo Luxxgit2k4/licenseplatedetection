@@ -16,7 +16,7 @@ const Parking = () => {
   // this usestate is for increasing the hours
   const [hours, setHours] = useState(1);
 
-  const rate = 50;
+  const rate = 50; // to calculate the parking when hours is increased or decreased
 
   // useeffect for fetching the data and updating the DOM based on the slots available
   useEffect(() => {
@@ -41,17 +41,17 @@ const Parking = () => {
   const slotselection = (slot_no) => {
     setselectslot(slot_no);
     setpopup(true);
-    setHours(1);
+    setHours(1); // sets hour to default value of 1
     console.log(`Selected slot ${slot_no}`)
   };
-
+  // to increase the number of hours for the parking payment
   const increasehours = () => setHours((prev) => Math.min(prev + 1, 24));
-
+// to decrease the number of hours for the paring payment
   const decreasehours = () => setHours((prev) => Math.max(prev - 1, 1));
 
-    const payment = async () => {
+    const payment = async () => { // used to create an order with selected slot and amount
 try {
-    const amount = rate * hours * 100;
+    const amount = rate * hours * 100; // the rupees is converted into paise as razorpay accepts only in paise but to the user it is shown as rupees
     const currency = "INR";
     const receipt = `receipt_${Date.now()}`;
 
@@ -61,7 +61,8 @@ try {
       body: JSON.stringify({ amount, currency, receipt }),
     });
           const order = await response.json();
-          console.log(order);
+          console.log("Order created successfully !!...")
+          console.log(order)
         } catch (error) {
           console.error("Error creating an order...", error);
         }
