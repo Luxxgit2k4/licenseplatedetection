@@ -4,15 +4,20 @@ import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
 
 const Parking = () => {
-// initially the slots are empty and using useState we are updating by fetching it from the database
 
+
+// initially the slots are empty and using useState we are updating by fetching it from the database
   const [parkingslots, setparkingslots] = useState([]);
+
   // this usestate will show the loading animation while fetching the slots data
   const [loading, setLoading] = useState(true);
+
   // this usestate is for selecting the empty slots
   const [selectslot, setselectslot] = useState(null);
+
   // this usestate is for the Popup menu after selecting a slot
   const [ispopup, setpopup] = useState(false);
+
   // this usestate is for increasing the hours
   const [hours, setHours] = useState(1);
 
@@ -45,6 +50,7 @@ const Parking = () => {
     console.log(`Selected slot ${slot_no}`)
   };
 
+// this useEffect is for the opening the popup of razorpay checkout by appending script tag when an order is created to the razorpay server.
 useEffect(() => {
   const script = document.createElement("script");
   script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -56,11 +62,17 @@ useEffect(() => {
 // to decrease the number of hours for the paring payment
   const decreasehours = () => setHours((prev) => Math.max(prev - 1, 1));
 
-    const payment = async () => { // used to create an order with selected slot and amount
+    const payment = async (e) => {
+
+      // used to create an order with selected slot and amount after creating an order it opens the razorpay checkout menu. Wrote this by referring this https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/#api-sample-code
+
+      e.preventDefault();
 try {
     const amount = rate * hours * 100; // the rupees is converted into paise as razorpay accepts only in paise but to the user it is shown as rupees
     const currency = "INR";
     const receipt = `receipt_${Date.now()}`;
+
+// giving a post request to the razorpay server to create an order with the selected amount
 
     const response = await fetch("http://localhost:8007/order", {
       method: "POST",
@@ -78,6 +90,9 @@ try {
     name: "Kumar Parking Limited",
     description: `Selected slot - ${selectslot}`,
     order_id: order.id,
+
+    // handler function to verify whether the payment is valid or not by giving a post request to the verify-payment route
+
     handler: async function (response) {
       const body = {
         ...response,
@@ -92,8 +107,8 @@ try {
       });
       const jsonRes = await validateRes.json();
       console.log(jsonRes)
-        setpopup(false);
-        setselectslot(null);
+        setpopup(false);  // closes the pop up while redirecting after payment success
+        setselectslot(null); // deselects the slot after redirection
       },
       prefill: {
         name: "UserName",
@@ -105,6 +120,7 @@ try {
 
     const razor = new window.Razorpay(options);
     razor.open();
+
   } catch (error) {
     console.error("Error creating order or payment:", error);
   }
@@ -133,12 +149,15 @@ try {
     3rd Floor
     </button>
     </div>
+
     {/* this is the loading animation which runs from that package, we can set the colour if you want refer this link https://www.npmjs.com/package/react-simple-loading */}
-{loading ? (
+
+    {loading ? (
         <div> <Loading /> </div>
       ) : (
 
         <div className="grid grid-cols-3 gap-6 w-full max-w-6xl">
+
   {/* Grid with three columns for Slot A and the roadlike border then at last Slot B */}
   {/* The following one is A slot mapping  */}
           <div className="flex flex-col gap-6 justify-self-start">
