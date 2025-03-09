@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import Loading from 'react-simple-loading'// Package for the loading animation
-import Popup from 'reactjs-popup';
+import Popup from 'reactjs-popup'; // package for the pop up menu
+import { useNavigate } from "react-router";
 import 'reactjs-popup/dist/index.css';
 
+const navigate = useNavigate();
 const Parking = () => {
 
 
@@ -57,6 +59,7 @@ useEffect(() => {
   script.async = true;
   document.body.appendChild(script);
 }, []);
+
   // to increase the number of hours for the parking payment
   const increasehours = () => setHours((prev) => Math.min(prev + 1, 24));
 // to decrease the number of hours for the paring payment
@@ -95,7 +98,7 @@ try {
 
     handler: async function (response) {
       const body = {
-        ...response,
+        ...response, slot: selectslot, hours, amount: amount / 100
       };
 
       const validateRes = await fetch("http://localhost:8007/verify-payment", {
@@ -107,8 +110,14 @@ try {
       });
       const jsonRes = await validateRes.json();
       console.log(jsonRes)
-        setpopup(false);  // closes the pop up while redirecting after payment success
-        setselectslot(null); // deselects the slot after redirection
+
+       /* setpopup(false);  // closes the pop up while redirecting after payment success
+        setselectslot(null); // deselects the slot after redirection */
+
+      if (jsonRes.success) {
+        navigate("/success", { state: body});
+      }
+
       },
       prefill: {
         name: "UserName",
