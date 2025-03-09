@@ -78,12 +78,20 @@ try {
     name: "Kumar Parking Limited",
     description: `Selected slot - ${selectslot}`,
     order_id: order.id,
-    handler: function (response) {
-        console.log("Payment Success:", response);
-        alert("Payment Successful!");
-        alert(response.razorpay_payment_id);
-        alert(response.razorpay_order_id);
-        alert(response.razorpay_signature)
+    handler: async function (response) {
+      const body = {
+        ...response,
+      };
+
+      const validateRes = await fetch("http://localhost:8007/verify-payment", {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const jsonRes = await validateRes.json();
+      console.log(jsonRes)
         setpopup(false);
         setselectslot(null);
       },
