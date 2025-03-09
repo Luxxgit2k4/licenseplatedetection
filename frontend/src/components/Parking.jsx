@@ -44,6 +44,13 @@ const Parking = () => {
     setHours(1); // sets hour to default value of 1
     console.log(`Selected slot ${slot_no}`)
   };
+
+useEffect(() => {
+  const script = document.createElement("script");
+  script.src = "https://checkout.razorpay.com/v1/checkout.js";
+  script.async = true;
+  document.body.appendChild(script);
+}, []);
   // to increase the number of hours for the parking payment
   const increasehours = () => setHours((prev) => Math.min(prev + 1, 24));
 // to decrease the number of hours for the paring payment
@@ -63,10 +70,39 @@ try {
           const order = await response.json();
           console.log("Order created successfully !!...")
           console.log(order)
-        } catch (error) {
-          console.error("Error creating an order...", error);
-        }
-      }
+
+  const options = {
+    key: "rzp_test_a34HlK9mdp7A4M",
+    amount: amount,
+    currency: currency,
+    name: "Kumar Parking Limited",
+    description: `Selected slot - ${selectslot}`,
+    order_id: order.id,
+    handler: function (response) {
+        console.log("Payment Success:", response);
+        alert("Payment Successful!");
+        alert(response.razorpay_payment_id);
+        alert(response.razorpay_order_id);
+        alert(response.razorpay_signature)
+        setpopup(false);
+        setselectslot(null);
+      },
+      prefill: {
+        name: "UserName",
+        email: "user@example.com",
+        contact: "9999999999",
+      },
+      theme: { color: "#3399cc" },
+    };
+
+    const razor = new window.Razorpay(options);
+    razor.open();
+  } catch (error) {
+    console.error("Error creating order or payment:", error);
+  }
+};
+
+
 
   return (
 
