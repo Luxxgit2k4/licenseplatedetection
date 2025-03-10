@@ -11,7 +11,23 @@ const Success = () => {
 
   const slot = searchParams.get("slot");
   const amount = searchParams.get("amount");
-  const transactionId = searchParams.get("order_id")
+  const orderId = searchParams.get("order_id")
+  const transactionId = orderId.substring(6)
 
-}
+  return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+            <h1 className="text-2xl font-bold mb-4">Payment Successful! 🎉</h1>
+            <p>Transaction ID: {transactionId}</p>
+            <p>Amount Paid: ₹{amount}</p>
+
+            {/* Button to generate receipt as PDF */}
+            <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md">
+                Generate PDF Receipt
+            </button>
+        </div>
+    );
+};
+
+
+export default Success;
 
