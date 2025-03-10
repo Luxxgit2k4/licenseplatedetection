@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import Loading from 'react-simple-loading'// Package for the loading animation
 import Popup from 'reactjs-popup'; // package for the pop up menu
-import { useNavigate } from "react-router";
+// import { useNavigate } from "react-router";
 import 'reactjs-popup/dist/index.css';
 
-const navigate = useNavigate();
 const Parking = () => {
+
+// const navigate = useNavigate();
 
 
 // initially the slots are empty and using useState we are updating by fetching it from the database
@@ -93,6 +94,8 @@ try {
     name: "Kumar Parking Limited",
     description: `Selected slot - ${selectslot}`,
     order_id: order.id,
+    callback_url: "https://localhost:4321/",
+    redirect: true,
 
     // handler function to verify whether the payment is valid or not by giving a post request to the verify-payment route
 
@@ -114,9 +117,9 @@ try {
        /* setpopup(false);  // closes the pop up while redirecting after payment success
         setselectslot(null); // deselects the slot after redirection */
 
-      if (jsonRes.success) {
-        navigate("/success", { state: body});
-      }
+      // if (jsonRes.success) {
+      //   navigate("/success", { state: body});
+      // }
 
       },
       prefill: {
