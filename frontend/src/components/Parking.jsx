@@ -94,7 +94,7 @@ try {
     name: "Kumar Parking Limited",
     description: `Selected slot - ${selectslot}`,
     order_id: order.id,
-    callback_url: `http://localhost:8007/payment-success?slot=${selectslot}&amount=${amount / 100}&order_id=${order.id}`, // razorpay has a default callback_url option which sends a post request automatically to the specified url and redirects to that url after a successful payment
+    callback_url: `http://localhost:8007/payment-success?slot=${selectslot}&hours=${hours}&amount=${amount / 100}&order_id=${order.id}`, // razorpay has a default callback_url option which sends a post request automatically to the specified url and redirects to that url after a successful payment
     redirect: true,
 
     // handler function to verify whether the payment is valid or not by giving a post request to the verify-payment route
