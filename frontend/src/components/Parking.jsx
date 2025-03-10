@@ -87,6 +87,14 @@ try {
           console.log("Order created successfully !!...")
           console.log(order)
 
+// after creating an order to the razorpay the razorpay opens which sends a request to the parking slot database by updating the is_booked status to true of the selected slot which changes the colour of the booked slot and makes it not able to select by the other user
+
+  await fetch(`http://127.0.0.1:8004/parkingData/${selectslot}/bookslot`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_booked: true }),
+    });
+
   const options = {
     key: "rzp_test_a34HlK9mdp7A4M",
     amount: amount,
@@ -97,7 +105,7 @@ try {
     callback_url: `http://localhost:8007/payment-success?slot=${selectslot}&hours=${hours}&amount=${amount / 100}&order_id=${order.id}`, // razorpay has a default callback_url option which sends a post request automatically to the specified url and redirects to that url after a successful payment
     redirect: true,
 
-    // handler function to verify whether the payment is valid or not by giving a post request to the verify-payment route
+    // handler function to verify whether the payment is valid or not by giving a post request to the verify-payment route and it saves the payment in the razorpay dashboard
 
     handler: async function (response) {
       const body = {
@@ -120,8 +128,20 @@ try {
       // if (jsonRes.success) {
       //   navigate("/success", { state: body});
       // }
-
       },
+
+    // the modal is an inbuilt options of the razorpay which triggers a certain function when the payment is cancelled here the is_booked status of the selected slot is updated to false again so the colour changes back to normal hence othe user can select the parking slot
+       modal: {
+        ondismiss: async function () {
+          console.log("User closed Razorpay, marking slot as available...");
+          await fetch(`http://127.0.0.1:8004/parkingData/${selectslot}/bookslot`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ is_booked: false }),
+          });
+        },
+      },
+
       prefill: {
         name: "UserName",
         email: "user@example.com",
@@ -182,12 +202,14 @@ try {
                                className={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
                     slot.slot_status
                       ? "bg-gray-700 cursor-not-allowed"
+                      : slot.is_booked
+                      ? "bg-yellow-700 cursor-not-allowed"
                       : slot.slot_id === selectslot
                       ? "bg-blue-300"
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
  onClick={() =>{
-                 if (!slot.slot_status)
+                 if (!slot.slot_status && !slot.is_booked)
    slotselection(slot.slot_id)}
 }
                 >
@@ -221,15 +243,17 @@ try {
                   className={`flex flex-col items-center justify-center border border-dotted w-32 h-20 p-4 cursor-pointer ${
                     slot.slot_status
                       ? "bg-gray-700 cursor-not-allowed"
+                      : slot.is_booked
+                      ? "bg-yellow-700 cursor-not-allowed"
                       : slot.slot_id === selectslot
                       ? "bg-blue-300"
                       : "bg-gray-800 hover:bg-gray-700"
                   }`}
 
                onClick={() =>{
-                 if (!slot.slot_status)
-   slotselection(slot.slot_id)}
-}
+
+                 if (!slot.slot_status && !slot.is_booked)
+   slotselection(slot.slot_id)} }
                 >
                   {slot.slot_status ? (
                     <img src="/car.jpg" alt="Car" className="w-10 h-10" />
