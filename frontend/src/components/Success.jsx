@@ -56,6 +56,10 @@ pdf.text(`Amount Paid: ₹ ${amount}`, 20, 70);
 
   return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+
+  <a href="/parkingslot" className="absolute top-4 left-4 flex items-center text-white px-4 py-2">
+      ←
+    </a>
             <h1 className="text-2xl font-bold mb-4">Payment Successful! 🎉</h1>
             <p>Transaction ID: {transactionId}</p>
             <p>Amount Paid: ₹{amount}</p>
