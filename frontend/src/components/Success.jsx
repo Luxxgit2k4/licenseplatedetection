@@ -99,7 +99,7 @@ pdf.text(`Amount Paid: ₹ ${amount}`, 20, 70);
             className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md"
     onClick={download}
           >
-            Dowload
+            Download
           </button>
         </div>
 </div>
