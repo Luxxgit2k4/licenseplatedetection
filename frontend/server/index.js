@@ -40,9 +40,9 @@ app.post("/verify-payment", async (req, res) => { // this verifies whether the p
 });
 
 app.post("/payment-success", (req, res) => { // this receives post request from the razorpay checkout when the payment is successful by receiving query parameters and redirects the user to the success page
-  const { slot, amount, order_id } = req.query;
+  const { slot, hours, amount, order_id } = req.query;
   console.log("Payment successful. Redirecting !!!");
-  res.redirect(`https://localhost:4321/success?slot=${slot}&amount=${amount}&order_id=${order_id}`);
+  res.redirect(`https://localhost:4321/success?slot=${slot}&hours=${hours}&amount=${amount}&order_id=${order_id}`);
 });
 
 
