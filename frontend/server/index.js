@@ -6,7 +6,6 @@ import crypto from "crypto";
 import bodyParser from "body-parser";
 
 configDotenv() // To load razorpay api key from the .env
-
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
@@ -17,7 +16,7 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET,
 });
 
-app.post("/order", async (req, res) => {
+app.post("/order", async (req, res) => {  // receives a post request from the frontend which creates an order and opens the razorpay checkout in the frontend
   try {
   const options = req.body;
     const order = await razorpay.orders.create(options);
@@ -28,7 +27,7 @@ app.post("/order", async (req, res) => {
   }
 });
 
-app.post("/verify-payment", async (req, res) => {
+app.post("/verify-payment", async (req, res) => { // this verifies whether the payment is valid or not using the sha generated from the handler function when an order is created
   const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
   const sha = crypto.createHmac("sha256", process.env.RAZORPAY_SECRET);
   sha.update(`${razorpay_order_id}|${razorpay_payment_id}`);
@@ -39,6 +38,13 @@ app.post("/verify-payment", async (req, res) => {
 
  res.json({ message: "Success", orderId: razorpay_order_id, paymentId: razorpay_payment_id, });
 });
+
+app.post("/payment-success", (req, res) => { // this receives post request from the razorpay checkout when the payment is successful by receiving query parameters and redirects the user to the success page
+  const { slot, amount, order_id } = req.query;
+  console.log("Payment successful. Redirecting !!!");
+  res.redirect(`https://localhost:4321/success?slot=${slot}&amount=${amount}&order_id=${order_id}`);
+});
+
 
 const PORT = 8007;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
