@@ -3,7 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev --host",
+    "dev": "concurrently \"npm run dev:astro\" \"npm run dev:server\"",
+    "dev:astro": "astro dev -- host",
+    "dev:server": "nodemon server/index.js",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -33,6 +35,8 @@
   },
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "^1.2.0",
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9",
     "prettier": "^3.4.2",
     "prettier-plugin-astro": "^0.14.1"
   }
