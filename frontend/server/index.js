@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 
 let redirectURL = "https://localhost:4321";
-if (process.env.PROD) {
+if (process.env.PROD === "true") {
   redirectURL = process.env.RAZORPAY_REDIRECT;
 }
 
