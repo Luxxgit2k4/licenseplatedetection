@@ -1,0 +1,13 @@
+[[redirects]]
+  from = "/parkingData"
+  to = "http://parkspace.tunnel.bupd.xyz/parkingData"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/parkingData/:slot/bookslot"
+  to = "http://parkspace.tunnel.bupd.xyz/parkingData/:slot/bookslot"
+  status = 200
+  force = true
+  headers = { X-Proxy = "true" }
