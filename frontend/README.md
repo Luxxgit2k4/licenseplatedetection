@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/ae70306d-2ea1-4418-8e1b-c9433772dfd5/deploy-status)](https://app.netlify.com/sites/parking-ai-bupd/deploys)
+
 # Astro Starter Kit: Basics
 
 ```sh
