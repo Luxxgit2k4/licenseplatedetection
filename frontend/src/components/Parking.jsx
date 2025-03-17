@@ -30,7 +30,7 @@ const Parking = () => {
   useEffect(() => {
     const fetchslots = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8004/parkingData")
+        const response = await fetch("http://parkspace.tunnel.bupd.xyz/parkingData")
         const data = await response.json();
         setparkingslots(data.slots);
         setLoading(false); // the loading animation will stop when the data has been fetched
@@ -89,7 +89,7 @@ try {
 
 // after creating an order to the razorpay the razorpay opens which sends a request to the parking slot database by updating the is_booked status to true of the selected slot which changes the colour of the booked slot and makes it not able to select by the other user
 
-  await fetch(`http://127.0.0.1:8004/parkingData/${selectslot}/bookslot`, {
+  await fetch(`http://parkspace.tunnel.bupd.xyz/parkingData/${selectslot}/bookslot`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ is_booked: true }),
@@ -134,7 +134,7 @@ try {
        modal: {
         ondismiss: async function () {
           console.log("User closed Razorpay, marking slot as available...");
-          await fetch(`http://127.0.0.1:8004/parkingData/${selectslot}/bookslot`, {
+          await fetch(`http://parkspace.tunnel.bupd.xyz/parkingData/${selectslot}/bookslot`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ is_booked: false }),
